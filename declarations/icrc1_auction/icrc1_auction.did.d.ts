@@ -1,43 +1,53 @@
+import type { Principal } from '@dfinity/principal'
 import type { ActorMethod } from '@dfinity/agent'
 import type { IDL } from '@dfinity/candid'
-import type { Principal } from '@dfinity/principal'
 
 export interface Account {
   owner: Principal
   subaccount: [] | [Subaccount]
 }
+
+export type AccountRevision = bigint
 export type Amount = bigint
 export type CancelOrderResponse =
-  | { Ok: [OrderId, Token, bigint, number] }
+  | {
+      Ok: [OrderId, Token, OrderBookType, bigint, number]
+    }
   | {
       Err:
         | { UnknownOrder: null }
         | { UnknownPrincipal: null }
-        | { SessionNumberMismatch: Token }
+        | { AccountRevisionMismatch: null }
     }
 export type CancellationArg =
   | { all: [] | [Array<Token>] }
   | { orders: Array<{ ask: OrderId } | { bid: OrderId }> }
+
 export interface DepositArgs {
   token: Token
   from: Account
   amount: Amount
   expected_fee: [] | [bigint]
 }
+
 export type DepositResponse =
   | { Ok: DepositResult }
   | {
       Err:
         | { TransferError: { message: string } }
-        | { AmountBelowMinimum: object }
+        | { AmountBelowMinimum: {} }
         | { CallLedgerError: { message: string } }
         | { BadFee: { expected_fee: bigint } }
     }
+
 export interface DepositResult {
   credit_inc: Amount
   txid: bigint
   credit: bigint
 }
+
+export type EncryptedOrderBook = [Uint8Array | number[], Uint8Array | number[]]
+
 export interface IndicativeStats {
   clearing:
     | { match: { volume: bigint; price: number } }
@@ -50,9 +60,15 @@ export interface IndicativeStats {
   totalAskVolume: bigint
   totalBidVolume: bigint
 }
+
 export type ManageOrdersResponse =
   | {
-      Ok: [Array<[OrderId, Token, bigint, number]>, Array<OrderId>]
+      Ok: [
+        Array<[OrderId, Token, OrderBookType, bigint, number]>,
+        Array<
+          [OrderId, { placed: null } | { executed: Array<[number, bigint]> }]
+        >,
+      ]
     }
   | {
       Err:
@@ -74,7 +90,7 @@ export type ManageOrdersResponse =
             }
           }
         | { UnknownPrincipal: null }
-        | { SessionNumberMismatch: Token }
+        | { AccountRevisionMismatch: null }
         | {
             cancellation: {
               error: { UnknownAsset: null } | { UnknownOrder: null }
@@ -82,9 +98,11 @@ export type ManageOrdersResponse =
             }
           }
     }
+
 export interface NotifyArg {
   token: Token
 }
+
 export type NotifyResponse =
   | { Ok: NotifyResult }
   | {
@@ -92,22 +110,30 @@ export type NotifyResponse =
         | { NotAvailable: { message: string } }
         | { CallLedgerError: { message: string } }
     }
+
 export interface NotifyResult {
   credit_inc: Amount
   credit: bigint
   deposit_inc: Amount
 }
+
 export interface Order {
   icrc1Ledger: Token
   volume: bigint
+  orderBookType: OrderBookType
   price: number
 }
+
+export type OrderBookType = { delayed: null } | { immediate: null }
 export type OrderId = bigint
 export type PlaceArg = Array<
-  { ask: [Token, bigint, number] } | { bid: [Token, bigint, number] }
+  | { ask: [Token, OrderBookType, bigint, number] }
+  | { bid: [Token, OrderBookType, bigint, number] }
 >
 export type PlaceOrderResponse =
-  | { Ok: OrderId }
+  | {
+      Ok: [OrderId, { placed: null } | { executed: Array<[number, bigint]> }]
+    }
   | {
       Err:
         | {
@@ -118,11 +144,13 @@ export type PlaceOrderResponse =
         | { UnknownPrincipal: null }
         | { VolumeStepViolated: { baseVolumeStep: bigint } }
         | { TooLowOrder: null }
-        | { SessionNumberMismatch: Token }
+        | { AccountRevisionMismatch: null }
         | { PriceDigitsOverflow: { maxDigits: bigint } }
     }
 export type ReplaceOrderResponse =
-  | { Ok: OrderId }
+  | {
+      Ok: [OrderId, { placed: null } | { executed: Array<[number, bigint]> }]
+    }
   | {
       Err:
         | {
@@ -134,34 +162,38 @@ export type ReplaceOrderResponse =
         | { UnknownPrincipal: null }
         | { VolumeStepViolated: { baseVolumeStep: bigint } }
         | { TooLowOrder: null }
-        | { SessionNumberMismatch: Token }
+        | { AccountRevisionMismatch: null }
         | { PriceDigitsOverflow: { maxDigits: bigint } }
     }
 export type SessionNumber = bigint
 export type Subaccount = Uint8Array | number[]
 export type Token = Principal
+
 export interface TokenInfo {
   allowance_fee: Amount
   withdrawal_fee: Amount
   deposit_fee: Amount
 }
+
 export interface WithdrawArgs {
   to: Account
   token: Token
   amount: Amount
   expected_fee: [] | [bigint]
 }
+
 export type WithdrawResponse =
   | {
       Ok: { txid: bigint; amount: Amount }
     }
   | {
       Err:
-        | { AmountBelowMinimum: object }
-        | { InsufficientCredit: object }
+        | { AmountBelowMinimum: {} }
+        | { InsufficientCredit: {} }
         | { CallLedgerError: { message: string } }
         | { BadFee: { expected_fee: bigint } }
     }
+
 export interface _SERVICE {
   addAdmin: ActorMethod<[Principal], undefined>
   auction_query: ActorMethod<
@@ -170,9 +202,11 @@ export interface _SERVICE {
       {
         last_prices: [] | [boolean]
         credits: [] | [boolean]
+        dark_order_books: [] | [boolean]
         asks: [] | [boolean]
         bids: [] | [boolean]
         session_numbers: [] | [boolean]
+        immediate_price_history: [] | [[bigint, bigint]]
         transaction_history: [] | [[bigint, bigint]]
         reversed_history: [] | [boolean]
         price_history: [] | [[bigint, bigint, boolean]]
@@ -184,9 +218,12 @@ export interface _SERVICE {
       credits: Array<
         [Token, { total: bigint; locked: bigint; available: bigint }]
       >
+      dark_order_books: Array<[Principal, EncryptedOrderBook]>
       asks: Array<[OrderId, Order]>
       bids: Array<[OrderId, Order]>
+      account_revision: bigint
       session_numbers: Array<[Token, SessionNumber]>
+      immediate_price_history: Array<[bigint, bigint, Token, bigint, number]>
       transaction_history: Array<
         [bigint, bigint, { ask: null } | { bid: null }, Token, bigint, number]
       >
@@ -259,12 +296,14 @@ export interface _SERVICE {
     | {
         Err:
           | { MalformedAddress: string }
-          | { GenericError: { error_code: any } }
+          | {
+              GenericError: { error_message: string; error_code: bigint }
+            }
           | { TemporarilyUnavailable: any }
           | { InsufficientAllowance: { allowance: bigint } }
           | { AlreadyProcessing: null }
           | { Duplicate: { duplicate_of: bigint } }
-          | { InsufficientCredit: object }
+          | { InsufficientCredit: {} }
           | { BadFee: { expected_fee: bigint } }
           | { AmountTooLow: bigint }
           | { AllowanceChanged: { current_allowance: bigint } }
@@ -320,11 +359,11 @@ export interface _SERVICE {
     | { Pending: null }
   >
   cancelAsks: ActorMethod<
-    [Array<OrderId>, [] | [SessionNumber]],
+    [Array<OrderId>, [] | [AccountRevision]],
     Array<CancelOrderResponse>
   >
   cancelBids: ActorMethod<
-    [Array<OrderId>, [] | [SessionNumber]],
+    [Array<OrderId>, [] | [AccountRevision]],
     Array<CancelOrderResponse>
   >
   cycles_withdraw: ActorMethod<
@@ -346,14 +385,16 @@ export interface _SERVICE {
                 rejection_reason: string
               }
             }
-          | { GenericError: { message: string; error_code: bigint } }
+          | {
+              GenericError: { error_message: string; error_code: bigint }
+            }
           | { TemporarilyUnavailable: null }
           | { Duplicate: { duplicate_of: bigint } }
-          | { InsufficientCredit: object }
+          | { InsufficientCredit: {} }
           | { BadFee: { expected_fee: bigint } }
           | { InvalidReceiver: { receiver: Principal } }
           | { CreatedInFuture: { ledger_time: bigint } }
-          | { TooLowAmount: object }
+          | { TooLowAmount: {} }
           | { TooOld: null }
           | { InsufficientFunds: { balance: bigint } }
       }
@@ -370,64 +411,42 @@ export interface _SERVICE {
   icrc84_withdraw: ActorMethod<[WithdrawArgs], WithdrawResponse>
   indicativeStats: ActorMethod<[Principal], IndicativeStats>
   listAdmins: ActorMethod<[], Array<Principal>>
+  manageDarkOrderBooks: ActorMethod<
+    [Array<[Principal, [] | [EncryptedOrderBook]]>, [] | [bigint]],
+    | { Ok: Array<[] | [EncryptedOrderBook]> }
+    | {
+        Err:
+          | { UnknownAsset: Principal }
+          | { NoCredit: null }
+          | { UnknownPrincipal: null }
+          | { AccountRevisionMismatch: null }
+      }
+  >
   manageOrders: ActorMethod<
-    [[] | [CancellationArg], PlaceArg, [] | [SessionNumber]],
+    [[] | [CancellationArg], PlaceArg, [] | [AccountRevision]],
     ManageOrdersResponse
   >
   nextSession: ActorMethod<[], { counter: bigint; timestamp: bigint }>
   placeAsks: ActorMethod<
-    [Array<[Token, bigint, number]>, [] | [SessionNumber]],
+    [Array<[Token, OrderBookType, bigint, number]>, [] | [AccountRevision]],
     Array<PlaceOrderResponse>
   >
   placeBids: ActorMethod<
-    [Array<[Token, bigint, number]>, [] | [SessionNumber]],
+    [Array<[Token, OrderBookType, bigint, number]>, [] | [AccountRevision]],
     Array<PlaceOrderResponse>
   >
   principalToSubaccount: ActorMethod<[Principal], [] | [Uint8Array | number[]]>
-  queryAsks: ActorMethod<[], Array<[OrderId, Order, SessionNumber]>>
-  queryBids: ActorMethod<[], Array<[OrderId, Order, SessionNumber]>>
-  queryCredit: ActorMethod<
-    [Token],
-    [{ total: bigint; locked: bigint; available: bigint }, SessionNumber]
-  >
-  queryCredits: ActorMethod<
-    [],
-    Array<
-      [
-        Principal,
-        { total: bigint; locked: bigint; available: bigint },
-        SessionNumber,
-      ]
-    >
-  >
-  queryDepositHistory: ActorMethod<
-    [[] | [Token], bigint, bigint],
-    Array<[bigint, { deposit: null } | { withdrawal: null }, Token, bigint]>
-  >
-  queryPoints: ActorMethod<[], bigint>
-  queryPriceHistory: ActorMethod<
-    [[] | [Token], bigint, bigint, boolean],
-    Array<[bigint, bigint, Token, bigint, number]>
-  >
-  queryTokenAsks: ActorMethod<[Token], [Array<[OrderId, Order]>, SessionNumber]>
-  queryTokenBids: ActorMethod<[Token], [Array<[OrderId, Order]>, SessionNumber]>
-  queryTransactionHistory: ActorMethod<
-    [[] | [Token], bigint, bigint],
-    Array<
-      [bigint, bigint, { ask: null } | { bid: null }, Token, bigint, number]
-    >
-  >
   registerAsset: ActorMethod<
     [Principal, bigint],
     { Ok: bigint } | { Err: { AlreadyRegistered: null } }
   >
   removeAdmin: ActorMethod<[Principal], undefined>
   replaceAsk: ActorMethod<
-    [OrderId, bigint, number, [] | [SessionNumber]],
+    [OrderId, bigint, number, [] | [AccountRevision]],
     ReplaceOrderResponse
   >
   replaceBid: ActorMethod<
-    [OrderId, bigint, number, [] | [SessionNumber]],
+    [OrderId, bigint, number, [] | [AccountRevision]],
     ReplaceOrderResponse
   >
   settings: ActorMethod<
@@ -439,5 +458,6 @@ export interface _SERVICE {
     }
   >
 }
+
 export declare const idlFactory: IDL.InterfaceFactory
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[]

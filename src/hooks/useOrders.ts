@@ -89,6 +89,7 @@ const useOrders = () => {
           [
             [
               Principal.fromText(principal),
+              { delayed: null },
               BigInt(order.volumeInBase),
               Number(order.price),
             ],
@@ -100,6 +101,7 @@ const useOrders = () => {
           [
             [
               Principal.fromText(principal),
+              { delayed: null },
               BigInt(order.volumeInBase),
               Number(order.price),
             ],

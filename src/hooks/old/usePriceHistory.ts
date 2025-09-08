@@ -15,6 +15,7 @@ import {
   addDecimal,
 } from '../../utils/calculationsUtils'
 import { getActor } from '../../utils/canisterUtils'
+import { AUCTION_QUERY_EMPTY_PARAMS } from '../useAuctionQuery.ts'
 
 /**
  * Custom hook for fetching and managing price history.
@@ -41,12 +42,12 @@ const usePriceHistory = () => {
 
       const serviceActor = getActor(userAgent)
 
-      const prices = await serviceActor.queryPriceHistory(
-        [Principal.fromText(principal)],
-        BigInt(10000),
-        BigInt(0),
-        true,
-      )
+      const prices = await serviceActor
+        .auction_query([Principal.fromText(principal)], {
+          ...AUCTION_QUERY_EMPTY_PARAMS,
+          price_history: [[BigInt(10000), BigInt(0), true]],
+        })
+        .then((r) => r.price_history)
 
       const formattedData: DataItem[] = (prices ?? [])
         //.reverse()

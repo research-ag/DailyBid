@@ -1,18 +1,25 @@
 export const idlFactory = ({ IDL }) => {
   const Token = IDL.Principal
+  const EncryptedOrderBook = IDL.Tuple(IDL.Vec(IDL.Nat8), IDL.Vec(IDL.Nat8))
   const OrderId = IDL.Nat
+  const OrderBookType = IDL.Variant({
+    delayed: IDL.Null,
+    immediate: IDL.Null,
+  })
   const Order = IDL.Record({
     icrc1Ledger: Token,
     volume: IDL.Nat,
+    orderBookType: OrderBookType,
     price: IDL.Float64,
   })
   const SessionNumber = IDL.Nat
+  const AccountRevision = IDL.Nat
   const CancelOrderResponse = IDL.Variant({
-    Ok: IDL.Tuple(OrderId, Token, IDL.Nat, IDL.Float64),
+    Ok: IDL.Tuple(OrderId, Token, OrderBookType, IDL.Nat, IDL.Float64),
     Err: IDL.Variant({
       UnknownOrder: IDL.Null,
       UnknownPrincipal: IDL.Null,
-      SessionNumberMismatch: Token,
+      AccountRevisionMismatch: IDL.Null,
     }),
   })
   const Subaccount = IDL.Vec(IDL.Nat8)
@@ -91,14 +98,22 @@ export const idlFactory = ({ IDL }) => {
   })
   const PlaceArg = IDL.Vec(
     IDL.Variant({
-      ask: IDL.Tuple(Token, IDL.Nat, IDL.Float64),
-      bid: IDL.Tuple(Token, IDL.Nat, IDL.Float64),
+      ask: IDL.Tuple(Token, OrderBookType, IDL.Nat, IDL.Float64),
+      bid: IDL.Tuple(Token, OrderBookType, IDL.Nat, IDL.Float64),
     }),
   )
   const ManageOrdersResponse = IDL.Variant({
     Ok: IDL.Tuple(
-      IDL.Vec(IDL.Tuple(OrderId, Token, IDL.Nat, IDL.Float64)),
-      IDL.Vec(OrderId),
+      IDL.Vec(IDL.Tuple(OrderId, Token, OrderBookType, IDL.Nat, IDL.Float64)),
+      IDL.Vec(
+        IDL.Tuple(
+          OrderId,
+          IDL.Variant({
+            placed: IDL.Null,
+            executed: IDL.Vec(IDL.Tuple(IDL.Float64, IDL.Nat)),
+          }),
+        ),
+      ),
     ),
     Err: IDL.Variant({
       placement: IDL.Record({
@@ -116,7 +131,7 @@ export const idlFactory = ({ IDL }) => {
         index: IDL.Nat,
       }),
       UnknownPrincipal: IDL.Null,
-      SessionNumberMismatch: Token,
+      AccountRevisionMismatch: IDL.Null,
       cancellation: IDL.Record({
         error: IDL.Variant({
           UnknownAsset: IDL.Null,
@@ -127,7 +142,13 @@ export const idlFactory = ({ IDL }) => {
     }),
   })
   const PlaceOrderResponse = IDL.Variant({
-    Ok: OrderId,
+    Ok: IDL.Tuple(
+      OrderId,
+      IDL.Variant({
+        placed: IDL.Null,
+        executed: IDL.Vec(IDL.Tuple(IDL.Float64, IDL.Nat)),
+      }),
+    ),
     Err: IDL.Variant({
       ConflictingOrder: IDL.Tuple(
         IDL.Variant({ ask: IDL.Null, bid: IDL.Null }),
@@ -138,12 +159,18 @@ export const idlFactory = ({ IDL }) => {
       UnknownPrincipal: IDL.Null,
       VolumeStepViolated: IDL.Record({ baseVolumeStep: IDL.Nat }),
       TooLowOrder: IDL.Null,
-      SessionNumberMismatch: Token,
+      AccountRevisionMismatch: IDL.Null,
       PriceDigitsOverflow: IDL.Record({ maxDigits: IDL.Nat }),
     }),
   })
   const ReplaceOrderResponse = IDL.Variant({
-    Ok: OrderId,
+    Ok: IDL.Tuple(
+      OrderId,
+      IDL.Variant({
+        placed: IDL.Null,
+        executed: IDL.Vec(IDL.Tuple(IDL.Float64, IDL.Nat)),
+      }),
+    ),
     Err: IDL.Variant({
       ConflictingOrder: IDL.Tuple(
         IDL.Variant({ ask: IDL.Null, bid: IDL.Null }),
@@ -155,7 +182,7 @@ export const idlFactory = ({ IDL }) => {
       UnknownPrincipal: IDL.Null,
       VolumeStepViolated: IDL.Record({ baseVolumeStep: IDL.Nat }),
       TooLowOrder: IDL.Null,
-      SessionNumberMismatch: Token,
+      AccountRevisionMismatch: IDL.Null,
       PriceDigitsOverflow: IDL.Record({ maxDigits: IDL.Nat }),
     }),
   })
@@ -167,9 +194,11 @@ export const idlFactory = ({ IDL }) => {
         IDL.Record({
           last_prices: IDL.Opt(IDL.Bool),
           credits: IDL.Opt(IDL.Bool),
+          dark_order_books: IDL.Opt(IDL.Bool),
           asks: IDL.Opt(IDL.Bool),
           bids: IDL.Opt(IDL.Bool),
           session_numbers: IDL.Opt(IDL.Bool),
+          immediate_price_history: IDL.Opt(IDL.Tuple(IDL.Nat, IDL.Nat)),
           transaction_history: IDL.Opt(IDL.Tuple(IDL.Nat, IDL.Nat)),
           reversed_history: IDL.Opt(IDL.Bool),
           price_history: IDL.Opt(IDL.Tuple(IDL.Nat, IDL.Nat, IDL.Bool)),
@@ -191,9 +220,16 @@ export const idlFactory = ({ IDL }) => {
               }),
             ),
           ),
+          dark_order_books: IDL.Vec(
+            IDL.Tuple(IDL.Principal, EncryptedOrderBook),
+          ),
           asks: IDL.Vec(IDL.Tuple(OrderId, Order)),
           bids: IDL.Vec(IDL.Tuple(OrderId, Order)),
+          account_revision: IDL.Nat,
           session_numbers: IDL.Vec(IDL.Tuple(Token, SessionNumber)),
+          immediate_price_history: IDL.Vec(
+            IDL.Tuple(IDL.Nat64, IDL.Nat, Token, IDL.Nat, IDL.Float64),
+          ),
           transaction_history: IDL.Vec(
             IDL.Tuple(
               IDL.Nat64,
@@ -291,7 +327,10 @@ export const idlFactory = ({ IDL }) => {
           Ok: IDL.Record({ block_index: IDL.Nat64 }),
           Err: IDL.Variant({
             MalformedAddress: IDL.Text,
-            GenericError: IDL.Record({ error_code: IDL.Reserved }),
+            GenericError: IDL.Record({
+              error_message: IDL.Text,
+              error_code: IDL.Nat64,
+            }),
             TemporarilyUnavailable: IDL.Reserved,
             InsufficientAllowance: IDL.Record({ allowance: IDL.Nat64 }),
             AlreadyProcessing: IDL.Null,
@@ -356,12 +395,12 @@ export const idlFactory = ({ IDL }) => {
       [],
     ),
     cancelAsks: IDL.Func(
-      [IDL.Vec(OrderId), IDL.Opt(SessionNumber)],
+      [IDL.Vec(OrderId), IDL.Opt(AccountRevision)],
       [IDL.Vec(CancelOrderResponse)],
       [],
     ),
     cancelBids: IDL.Func(
-      [IDL.Vec(OrderId), IDL.Opt(SessionNumber)],
+      [IDL.Vec(OrderId), IDL.Opt(AccountRevision)],
       [IDL.Vec(CancelOrderResponse)],
       [],
     ),
@@ -385,8 +424,8 @@ export const idlFactory = ({ IDL }) => {
               rejection_reason: IDL.Text,
             }),
             GenericError: IDL.Record({
-              message: IDL.Text,
-              error_code: IDL.Nat,
+              error_message: IDL.Text,
+              error_code: IDL.Nat64,
             }),
             TemporarilyUnavailable: IDL.Null,
             Duplicate: IDL.Record({ duplicate_of: IDL.Nat }),
@@ -425,8 +464,26 @@ export const idlFactory = ({ IDL }) => {
     icrc84_withdraw: IDL.Func([WithdrawArgs], [WithdrawResponse], []),
     indicativeStats: IDL.Func([IDL.Principal], [IndicativeStats], ['query']),
     listAdmins: IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+    manageDarkOrderBooks: IDL.Func(
+      [
+        IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Opt(EncryptedOrderBook))),
+        IDL.Opt(IDL.Nat),
+      ],
+      [
+        IDL.Variant({
+          Ok: IDL.Vec(IDL.Opt(EncryptedOrderBook)),
+          Err: IDL.Variant({
+            UnknownAsset: IDL.Principal,
+            NoCredit: IDL.Null,
+            UnknownPrincipal: IDL.Null,
+            AccountRevisionMismatch: IDL.Null,
+          }),
+        }),
+      ],
+      [],
+    ),
     manageOrders: IDL.Func(
-      [IDL.Opt(CancellationArg), PlaceArg, IDL.Opt(SessionNumber)],
+      [IDL.Opt(CancellationArg), PlaceArg, IDL.Opt(AccountRevision)],
       [ManageOrdersResponse],
       [],
     ),
@@ -436,103 +493,24 @@ export const idlFactory = ({ IDL }) => {
       ['query'],
     ),
     placeAsks: IDL.Func(
-      [IDL.Vec(IDL.Tuple(Token, IDL.Nat, IDL.Float64)), IDL.Opt(SessionNumber)],
+      [
+        IDL.Vec(IDL.Tuple(Token, OrderBookType, IDL.Nat, IDL.Float64)),
+        IDL.Opt(AccountRevision),
+      ],
       [IDL.Vec(PlaceOrderResponse)],
       [],
     ),
     placeBids: IDL.Func(
-      [IDL.Vec(IDL.Tuple(Token, IDL.Nat, IDL.Float64)), IDL.Opt(SessionNumber)],
+      [
+        IDL.Vec(IDL.Tuple(Token, OrderBookType, IDL.Nat, IDL.Float64)),
+        IDL.Opt(AccountRevision),
+      ],
       [IDL.Vec(PlaceOrderResponse)],
       [],
     ),
     principalToSubaccount: IDL.Func(
       [IDL.Principal],
       [IDL.Opt(IDL.Vec(IDL.Nat8))],
-      ['query'],
-    ),
-    queryAsks: IDL.Func(
-      [],
-      [IDL.Vec(IDL.Tuple(OrderId, Order, SessionNumber))],
-      ['query'],
-    ),
-    queryBids: IDL.Func(
-      [],
-      [IDL.Vec(IDL.Tuple(OrderId, Order, SessionNumber))],
-      ['query'],
-    ),
-    queryCredit: IDL.Func(
-      [Token],
-      [
-        IDL.Record({
-          total: IDL.Nat,
-          locked: IDL.Nat,
-          available: IDL.Nat,
-        }),
-        SessionNumber,
-      ],
-      ['query'],
-    ),
-    queryCredits: IDL.Func(
-      [],
-      [
-        IDL.Vec(
-          IDL.Tuple(
-            IDL.Principal,
-            IDL.Record({
-              total: IDL.Nat,
-              locked: IDL.Nat,
-              available: IDL.Nat,
-            }),
-            SessionNumber,
-          ),
-        ),
-      ],
-      ['query'],
-    ),
-    queryDepositHistory: IDL.Func(
-      [IDL.Opt(Token), IDL.Nat, IDL.Nat],
-      [
-        IDL.Vec(
-          IDL.Tuple(
-            IDL.Nat64,
-            IDL.Variant({ deposit: IDL.Null, withdrawal: IDL.Null }),
-            Token,
-            IDL.Nat,
-          ),
-        ),
-      ],
-      ['query'],
-    ),
-    queryPoints: IDL.Func([], [IDL.Nat], ['query']),
-    queryPriceHistory: IDL.Func(
-      [IDL.Opt(Token), IDL.Nat, IDL.Nat, IDL.Bool],
-      [IDL.Vec(IDL.Tuple(IDL.Nat64, IDL.Nat, Token, IDL.Nat, IDL.Float64))],
-      ['query'],
-    ),
-    queryTokenAsks: IDL.Func(
-      [Token],
-      [IDL.Vec(IDL.Tuple(OrderId, Order)), SessionNumber],
-      ['query'],
-    ),
-    queryTokenBids: IDL.Func(
-      [Token],
-      [IDL.Vec(IDL.Tuple(OrderId, Order)), SessionNumber],
-      ['query'],
-    ),
-    queryTransactionHistory: IDL.Func(
-      [IDL.Opt(Token), IDL.Nat, IDL.Nat],
-      [
-        IDL.Vec(
-          IDL.Tuple(
-            IDL.Nat64,
-            IDL.Nat,
-            IDL.Variant({ ask: IDL.Null, bid: IDL.Null }),
-            Token,
-            IDL.Nat,
-            IDL.Float64,
-          ),
-        ),
-      ],
       ['query'],
     ),
     registerAsset: IDL.Func(
@@ -547,12 +525,12 @@ export const idlFactory = ({ IDL }) => {
     ),
     removeAdmin: IDL.Func([IDL.Principal], [], []),
     replaceAsk: IDL.Func(
-      [OrderId, IDL.Nat, IDL.Float64, IDL.Opt(SessionNumber)],
+      [OrderId, IDL.Nat, IDL.Float64, IDL.Opt(AccountRevision)],
       [ReplaceOrderResponse],
       [],
     ),
     replaceBid: IDL.Func(
-      [OrderId, IDL.Nat, IDL.Float64, IDL.Opt(SessionNumber)],
+      [OrderId, IDL.Nat, IDL.Float64, IDL.Opt(AccountRevision)],
       [ReplaceOrderResponse],
       [],
     ),

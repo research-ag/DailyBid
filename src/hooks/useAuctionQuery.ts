@@ -1,15 +1,32 @@
 import { HttpAgent } from '@dfinity/agent'
 import { Principal } from '@dfinity/principal'
 
-import { DataItem, Option, TokenMetadata, TokenDataItem } from '../types'
+import { _SERVICE as AuctionService } from '../../declarations/icrc1_auction/icrc1_auction.did'
+import { DataItem, Option, TokenDataItem, TokenMetadata } from '../types'
 import {
+  addDecimal,
   convertPriceFromCanister,
   convertVolumeFromCanister,
   getDecimals,
-  addDecimal,
 } from '../utils/calculationsUtils'
 import { getActor } from '../utils/canisterUtils'
 import { getToken } from '../utils/tokenUtils'
+
+export const AUCTION_QUERY_EMPTY_PARAMS: Parameters<
+  AuctionService['auction_query']
+>[1] = {
+  last_prices: [],
+  credits: [],
+  asks: [],
+  bids: [],
+  session_numbers: [],
+  transaction_history: [],
+  reversed_history: [true],
+  price_history: [],
+  deposit_history: [],
+  dark_order_books: [],
+  immediate_price_history: [],
+}
 
 // Date formatting options
 const DATE_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
@@ -384,17 +401,7 @@ const useAuctionQuery = () => {
       const serviceActor = getActor(userAgent)
 
       // Prepare query parameters
-      const queryParams: any = {
-        last_prices: [],
-        credits: [],
-        asks: [],
-        bids: [],
-        session_numbers: [],
-        transaction_history: [],
-        reversed_history: [true],
-        price_history: [],
-        deposit_history: [],
-      }
+      const queryParams = AUCTION_QUERY_EMPTY_PARAMS
 
       // Enable requested query types
       if (queryTypes.includes('price_history')) {

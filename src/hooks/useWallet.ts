@@ -14,6 +14,7 @@ import {
   getSubAccountFromPrincipal,
 } from '../utils/convertionsUtils'
 import { getToken } from '../utils/tokenUtils'
+import { AUCTION_QUERY_EMPTY_PARAMS } from './useAuctionQuery.ts'
 
 /**
  * Custom hook for fetching and managing user wallet.
@@ -313,9 +314,11 @@ const useWallet = () => {
   const getUserPoints = async (userAgent: HttpAgent) => {
     try {
       const serviceActor = getActor(userAgent)
-      const result = await serviceActor.queryPoints()
-
-      return result
+      const result = await serviceActor.auction_query(
+        [],
+        AUCTION_QUERY_EMPTY_PARAMS,
+      )
+      return result.points
     } catch (error) {
       console.error('Error query user points:', error)
       return null
