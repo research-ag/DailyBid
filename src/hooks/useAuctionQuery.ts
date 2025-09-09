@@ -401,7 +401,7 @@ const useAuctionQuery = () => {
       const serviceActor = getActor(userAgent)
 
       // Prepare query parameters
-      const queryParams = AUCTION_QUERY_EMPTY_PARAMS
+      const queryParams = { ...AUCTION_QUERY_EMPTY_PARAMS }
 
       // Enable requested query types
       if (queryTypes.includes('price_history')) {
