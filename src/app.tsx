@@ -3,7 +3,6 @@ import React, { useEffect } from 'react'
 import { HelmetProvider, Helmet } from 'react-helmet-async'
 import { useRoutes } from 'react-router-dom'
 
-import { useMixpanel } from './hooks/useMixpanel'
 import { useSmartlook } from './hooks/useSmartlook'
 import useWindow from './hooks/useWindow'
 import './languages/i18n'
@@ -14,7 +13,6 @@ const App: React.FC = () => {
   const { getIsTelegramApp } = useWindow()
   const { isTelegram } = getIsTelegramApp()
   useSmartlook()
-  useMixpanel()
 
   useEffect(() => {
     if (isTelegram) {

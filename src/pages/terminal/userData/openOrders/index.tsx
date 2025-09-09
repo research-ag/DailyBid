@@ -29,7 +29,6 @@ import {
   convertPriceFromCanister,
   convertVolumeFromCanister,
 } from '../../../../utils/calculationsUtils'
-import { analytics } from '../../../../utils/mixpanelUtils'
 import { getErrorMessageCancelOrder } from '../../../../utils/orderUtils'
 import { getSimpleToastDescription } from '../../../../utils/uiUtils'
 
@@ -227,26 +226,6 @@ const OpenOrders: React.FC = () => {
               Number(symbol?.decimals),
               formattedPrice,
             )
-
-            // Mixpanel event tracking [Bid/Ask Canceled]
-            const eventData = {
-              principal: userPrincipal,
-              auction_id: `${id}`,
-              price: `${formattedPrice}`,
-              asset: symbol?.base ?? 'UNKNOWN',
-            }
-
-            if (type === 'buy') {
-              analytics.bidCanceled({
-                ...eventData,
-                bid_amount: `${volumeInBase}`,
-              })
-            } else {
-              analytics.askCanceled({
-                ...eventData,
-                ask_amount: `${volumeInBase}`,
-              })
-            }
           } else {
             if (toastId) {
               toast.update(toastId, {

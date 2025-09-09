@@ -21,7 +21,6 @@ import { useDispatch } from 'react-redux'
 import useWindow from '../../../../hooks/useWindow'
 import { AppDispatch } from '../../../../store'
 import { mnemonicAuthenticate } from '../../../../utils/authUtils'
-import { encrypt, decrypt } from '../../../../utils/cryptoUtils'
 
 interface MnemonicComponentProps {
   onClose: () => void
@@ -74,7 +73,7 @@ const MnemonicComponent: React.FC<MnemonicComponentProps> = ({
       setErrorMessage(null)
       const sanitizedPhrase = sanitizePhrase(seed)
       await mnemonicAuthenticate(sanitizedPhrase, dispatch)
-      if (isTelegram) localStorage.setItem('mnemonicPhrase', encrypt(seed))
+      if (isTelegram) localStorage.setItem('mnemonicPhrase', seed)
       setSeed('')
       onClose()
     } catch (error) {
@@ -100,9 +99,8 @@ const MnemonicComponent: React.FC<MnemonicComponentProps> = ({
 
   useEffect(() => {
     if (isTelegram) {
-      const localStorageSaved = localStorage.getItem('mnemonicPhrase')
-      if (localStorageSaved) {
-        const seed = decrypt(localStorageSaved)
+      const seed = localStorage.getItem('mnemonicPhrase')
+      if (seed) {
         setSeedLocalStorage(seed)
         setSeed(seed)
       }

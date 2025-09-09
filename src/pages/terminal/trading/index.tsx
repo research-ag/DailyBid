@@ -47,7 +47,6 @@ import {
   volumeDecimalsValidate,
   fixDecimal,
 } from '../../../utils/calculationsUtils'
-import { analytics } from '../../../utils/mixpanelUtils'
 import {
   validationPlaceOrder,
   getErrorMessagePlaceOrder,
@@ -336,26 +335,6 @@ const Trading = () => {
                   ),
                   status: 'success',
                   isClosable: true,
-                })
-              }
-
-              // Mixpanel event tracking [Bid/Ask Placed]
-              const eventData = {
-                principal: userPrincipal,
-                auction_id: String(response[0].Ok),
-                price: String(order.price),
-                asset: symbol?.base ?? 'UNKNOWN',
-              }
-
-              if (order.type === 'buy') {
-                analytics.bidPlaced({
-                  ...eventData,
-                  bid_amount: String(order.volumeInBase),
-                })
-              } else {
-                analytics.askPlaced({
-                  ...eventData,
-                  ask_amount: String(order.volumeInBase),
                 })
               }
             } else {

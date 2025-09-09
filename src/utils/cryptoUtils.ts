@@ -1,17 +1,13 @@
 import * as aes from 'aes-js'
 
-const defaultKey = aes.utils.utf8.toBytes(process.env.ENV_AES_KEY || '')
-if (defaultKey.length !== 32)
-  throw new Error('Invalid key size for AES. Must be 256-bit / 32 bytes.')
-
 /**
  * Encrypts a given text using AES-CTR mode.
  * @param text - The text to encrypt.
  * @param customKey - Optional AES key (32 bytes). If not provided, uses the default key.
  * @returns - The encrypted text in HEX format.
  */
-function encrypt(text: string, customKey?: Uint8Array): string {
-  const key = customKey && customKey.length === 32 ? customKey : defaultKey
+function encrypt(text: string, customKey: Uint8Array): string {
+  const key = customKey
   const bytesInfo = aes.utils.utf8.toBytes(text)
 
   const aesCtr = new aes.ModeOfOperation.ctr(key)
@@ -25,8 +21,8 @@ function encrypt(text: string, customKey?: Uint8Array): string {
  * @param customKey - Optional AES key (32 bytes). If not provided, uses the default key.
  * @returns - The decrypted text.
  */
-function decrypt(encryptedHex: string, customKey?: Uint8Array): string {
-  const key = customKey && customKey.length === 32 ? customKey : defaultKey
+function decrypt(encryptedHex: string, customKey: Uint8Array): string {
+  const key = customKey
   const encryptedBytes = aes.utils.hex.toBytes(encryptedHex)
 
   const aesCtr = new aes.ModeOfOperation.ctr(key)
