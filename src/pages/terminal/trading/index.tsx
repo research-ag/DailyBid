@@ -15,6 +15,8 @@ import {
   useToast,
   Spinner,
   useColorModeValue,
+  Radio,
+  RadioGroup,
 } from '@chakra-ui/react'
 import { useFormik } from 'formik'
 import { useTranslation } from 'react-i18next'
@@ -24,7 +26,6 @@ import * as Yup from 'yup'
 import TradeTypeSelector from './tradeTypeSelector'
 import CustomSlider from '../../../components/customSlider'
 import LoginButtonComponent from '../../../components/loginButton'
-import TypeOrderButton from '../../../components/typeOrderButton'
 import useAuctionQuery from '../../../hooks/useAuctionQuery'
 import useOrders from '../../../hooks/useOrders'
 import { RootState, AppDispatch } from '../../../store'
@@ -78,9 +79,6 @@ const Trading = () => {
   const [currentSliderValue, setCurrentSliderValue] = useState(0)
   const [message, setMessage] = useState<string | null>(null)
   const { userAgent } = useSelector((state: RootState) => state.auth)
-  const userPrincipal = useSelector(
-    (state: RootState) => state.auth.userPrincipal,
-  )
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated,
   )
@@ -856,11 +854,12 @@ const Trading = () => {
         tradeType={tradeType}
         handleTradeTypeChange={handleTradeTypeChange}
       />
-      <TypeOrderButton
-        firstOption="Auction"
-        secondOption="Immediate"
-        onChange={setTypeOrder}
-      />
+      <RadioGroup value={typeOrder} onChange={setTypeOrder}>
+        <Flex gap={8} justifyContent="center">
+          <Radio value="Auction">Auction</Radio>
+          <Radio value="Immediate">Immediate</Radio>
+        </Flex>
+      </RadioGroup>
       <Flex direction="column">
         <FormControl variant="floating">
           <Input
