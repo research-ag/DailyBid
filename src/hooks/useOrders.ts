@@ -74,6 +74,7 @@ const useOrders = () => {
     userAgent: HttpAgent,
     selectedSymbol: Option | null,
     order: Order,
+    typeOrder?: string,
   ) => {
     try {
       const serviceActor = getActor(userAgent)
@@ -82,6 +83,9 @@ const useOrders = () => {
         ? selectedSymbol[0]?.principal
         : selectedSymbol?.principal
 
+      const orderBookType =
+        typeOrder === 'Immediate' ? { immediate: null } : { delayed: null }
+
       let result
 
       if (order.type === 'buy') {
@@ -89,7 +93,7 @@ const useOrders = () => {
           [
             [
               Principal.fromText(principal),
-              { delayed: null },
+              orderBookType,
               BigInt(order.volumeInBase),
               Number(order.price),
             ],
@@ -101,7 +105,7 @@ const useOrders = () => {
           [
             [
               Principal.fromText(principal),
-              { delayed: null },
+              orderBookType,
               BigInt(order.volumeInBase),
               Number(order.price),
             ],

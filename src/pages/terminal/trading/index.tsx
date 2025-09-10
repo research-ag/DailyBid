@@ -312,7 +312,7 @@ const Trading = () => {
       const { placeOrder, replaceOrder } = useOrders()
 
       if (orderDetails.id === 0n) {
-        placeOrder(userAgent, symbol, order)
+        placeOrder(userAgent, symbol, order, typeOrder)
           .then(async (response: Result) => {
             setStatus({ success: true })
             setSubmitting(false)
@@ -326,11 +326,15 @@ const Trading = () => {
               response.length > 0 &&
               Object.keys(response[0]).includes('Ok')
             ) {
+              const ok = response[0].Ok
+              const status = ok && ok[1]
+              const executed = status && Object.prototype.hasOwnProperty.call(status, 'executed')
+              const descriptionText = executed ? t('Order executed') : t('Order created')
               if (toastId) {
                 toast.update(toastId, {
                   title: t('Success'),
                   description: getSimpleToastDescription(
-                    t('Order created'),
+                    descriptionText,
                     durationInSeconds,
                   ),
                   status: 'success',
@@ -394,11 +398,15 @@ const Trading = () => {
             const durationInSeconds = (endTime - startTime) / 1000
 
             if (Object.keys(response).includes('Ok')) {
+              const ok = response.Ok
+              const status = ok && ok[1]
+              const executed = status && Object.prototype.hasOwnProperty.call(status, 'executed')
+              const descriptionText = executed ? t('Order executed') : t('Order replaced')
               if (toastId) {
                 toast.update(toastId, {
                   title: t('Success'),
                   description: getSimpleToastDescription(
-                    t('Order replaced'),
+                    descriptionText,
                     durationInSeconds,
                   ),
                   status: 'success',

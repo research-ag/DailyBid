@@ -161,7 +161,7 @@ const useAuctionQuery = () => {
     ]
 
     return openOrdersRaw.map((order) => {
-      const { id, icrc1Ledger, price, volume, type } = order
+      const { id, icrc1Ledger, price, volume, type, orderBookType } = order
       const token = getToken(tokens, icrc1Ledger)
       const values = processTokenValues(
         Number(price),
@@ -170,11 +170,17 @@ const useAuctionQuery = () => {
         selectedQuote,
       )
 
+      const typeOrder =
+        orderBookType && Object.prototype.hasOwnProperty.call(orderBookType, 'immediate')
+          ? 'Immediate'
+          : 'Auction'
+
       return {
         id,
         datetime: '',
         ...values,
         type,
+        typeOrder,
         volume: values.volumeInQuote,
         quoteDecimals: selectedQuote.decimals,
         baseDecimals: token.decimals,
