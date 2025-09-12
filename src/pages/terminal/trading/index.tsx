@@ -80,6 +80,9 @@ const Trading = () => {
   const [currentSliderValue, setCurrentSliderValue] = useState(0)
   const [message, setMessage] = useState<string | null>(null)
   const { userAgent } = useSelector((state: RootState) => state.auth)
+  const userPrincipal = useSelector(
+    (state: RootState) => state.auth.userPrincipal,
+  )
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated,
   )
