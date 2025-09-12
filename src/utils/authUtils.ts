@@ -31,6 +31,9 @@ import {
   setUserIcpLegacyAccount,
   setUserDepositCycles,
 } from '../store/auth'
+import { getDeviceType } from '../utils/deviceUtils'
+import { getLocation } from '../utils/locationUtils'
+import { analytics } from '../utils/mixpanelUtils'
 
 /**
  * Creates and returns an HTTP agent with the specified identity.
@@ -129,6 +132,22 @@ export async function doLogin(
     principalText,
     hexSubAccountId,
   )
+
+  // Mixpanel event tracking [User Identify]
+  analytics.userIdentify(principalText)
+
+  // Mixpanel event tracking [User Logged In]
+  analytics.userLoggedIn({
+    principal: principalText,
+    login_method: loginMethod,
+  })
+
+  // Mixpanel event tracking [Demographics Captured]
+  analytics.demographicsCaptured({
+    principal: principalText,
+    location: await getLocation(),
+    device_type: getDeviceType(),
+  })
 
   dispatch(setUserAgent(myAgent))
   dispatch(setIsAuthenticated(true))

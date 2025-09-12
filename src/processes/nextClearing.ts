@@ -17,6 +17,7 @@ import {
 import { setTrades } from '../store/trades'
 import { checkUserAgentDelegation } from '../utils/authUtils'
 import { calculateHeaderInformation } from '../utils/headerInformationUtils'
+import { analytics } from '../utils/mixpanelUtils'
 
 /**
  * NextClearingComponent
@@ -128,6 +129,8 @@ const NextClearingComponent: React.FC = () => {
         // Validate user session
         if (!checkUserAgentDelegation(userAgent)) {
           dispatch(logout())
+          // Mixpanel event tracking [User Logged Out]
+          analytics.userLoggedOut(userPrincipal)
           localStorage.removeItem('identity')
           localStorage.removeItem('delegationIdentity')
           localStorage.removeItem('mnemonicPhrase')

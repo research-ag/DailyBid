@@ -174,8 +174,9 @@ const TelegramLoginComponent: React.FC = () => {
           const agent = getAgent(restoredDelegationII)
           doLogin(agent, dispatch, 'IC')
         } else {
-          const seed = localStorage.getItem('mnemonicPhrase')
-          if (seed) {
+          const localStorageSaved = localStorage.getItem('mnemonicPhrase')
+          if (localStorageSaved) {
+            const seed = decrypt(localStorageSaved)
             processMnemonic(seed)
           }
         }
