@@ -4,6 +4,7 @@ import { Principal } from '@dfinity/principal'
 import { TokenMetadata, Option, Order, SettingsState } from '../types'
 import { convertVolumeFromCanister } from '../utils/calculationsUtils'
 import { getActor } from '../utils/canisterUtils'
+import { encryptWithIBE, encryptWithVetKD } from '../utils/vetkd.ts'
 
 /**
  * Custom hook for managing orders.
@@ -214,12 +215,80 @@ const useOrders = () => {
     }
   }
 
+  const manageDarkOrderBook = async (
+    userAgent: HttpAgent,
+    selectedSymbol: Option | null,
+    orders: Order[],
+  ) => {
+    try {
+      const serviceActor = getActor(userAgent)
+      const principal = Array.isArray(selectedSymbol)
+        ? selectedSymbol[0]?.principal
+        : selectedSymbol?.principal
+      if (!principal) return { Err: { UnknownAsset: '' } }
+
+      const text = orders
+        .map(
+          (o) =>
+            `${o.type === 'buy' ? 'bid' : 'ask'}:${String(o.volumeInBase)}:${Number(o.price)}`,
+        )
+        .join(';')
+      const raw = new TextEncoder().encode(text)
+
+      const next = await serviceActor.nextSession()
+      const nextSessionTimestamp = Number(next.timestamp)
+
+      const data = await Promise.all([
+        encryptWithVetKD(userAgent as any, raw),
+        encryptWithIBE(userAgent as any, raw, nextSessionTimestamp),
+      ])
+
+      const res = await serviceActor.manageDarkOrderBooks(
+        [
+          [
+            Principal.fromText(principal),
+            [data as unknown as [Uint8Array, Uint8Array]],
+          ],
+        ],
+        [],
+      )
+      return res
+    } catch (error) {
+      console.error('Error manage dark order book:', error)
+      return { Err: { Unknown: String(error) } } as any
+    }
+  }
+
+  const deleteDarkOrderBook = async (
+    userAgent: HttpAgent,
+    selectedSymbol: Option | null,
+  ) => {
+    try {
+      const serviceActor = getActor(userAgent)
+      const principal = Array.isArray(selectedSymbol)
+        ? selectedSymbol[0]?.principal
+        : selectedSymbol?.principal
+      if (!principal) return { Err: { UnknownAsset: '' } }
+
+      const res = await serviceActor.manageDarkOrderBooks(
+        [[Principal.fromText(principal), []]],
+        [],
+      )
+      return res
+    } catch (error) {
+      console.error('Error delete dark order book:', error)
+      return { Err: { Unknown: String(error) } } as any
+    }
+  }
+
   return {
     getOrderSettings,
     placeOrder,
     replaceOrder,
     cancelOrder,
     manageOrders,
+    manageDarkOrderBook,
+    deleteDarkOrderBook,
   }
 }
 

@@ -11,6 +11,7 @@ import {
 } from '../utils/calculationsUtils'
 import { getActor } from '../utils/canisterUtils'
 import { getToken } from '../utils/tokenUtils'
+import { decryptWithVetKD } from '../utils/vetkd'
 
 export const AUCTION_QUERY_EMPTY_PARAMS: Parameters<
   AuctionService['auction_query']
@@ -171,7 +172,8 @@ const useAuctionQuery = () => {
       )
 
       const typeOrder =
-        orderBookType && Object.prototype.hasOwnProperty.call(orderBookType, 'immediate')
+        orderBookType &&
+        Object.prototype.hasOwnProperty.call(orderBookType, 'immediate')
           ? 'Immediate'
           : 'Auction'
 
@@ -355,6 +357,15 @@ const useAuctionQuery = () => {
     )
   }
 
+  type QueryType =
+    | 'price_history'
+    | 'transaction_history'
+    | 'deposit_history'
+    | 'open_orders'
+    | 'dark_order_books'
+    | 'session_numbers'
+    | 'credits'
+    | 'last_prices'
   /**
    * Fetches and returns data based on requested query types.
    *
@@ -391,7 +402,7 @@ const useAuctionQuery = () => {
       selectedQuote?: TokenMetadata
       priceDigitsLimit?: number
       tokens?: TokenMetadata[]
-      queryTypes: string[]
+      queryTypes: QueryType[]
     },
   ) => {
     try {
@@ -425,6 +436,10 @@ const useAuctionQuery = () => {
       if (queryTypes.includes('open_orders')) {
         queryParams.bids = [true]
         queryParams.asks = [true]
+      }
+
+      if (queryTypes.includes('dark_order_books')) {
+        queryParams.dark_order_books = [true]
       }
 
       if (queryTypes.includes('session_numbers')) {
@@ -480,6 +495,70 @@ const useAuctionQuery = () => {
         )
 
         response.orders = addDecimal(openOrders, 2)
+      }
+
+      if (
+        queryTypes.includes('dark_order_books') &&
+        selectedQuote &&
+        tokens.length > 0
+      ) {
+        const darkBooks = result.dark_order_books || []
+        const allDarkOrders: TokenDataItem[] = []
+
+        for (const [tokenPrincipal, encryptedBook] of darkBooks) {
+          try {
+            const token = getToken(tokens, tokenPrincipal)
+            if (!encryptedBook || encryptedBook.length < 1) continue
+
+            const firstCipher = new Uint8Array(
+              encryptedBook[0] as Uint8Array | number[],
+            )
+            const decrypted = await decryptWithVetKD(userAgent, firstCipher)
+            if (!decrypted) continue
+
+            const text = new TextDecoder().decode(decrypted)
+            if (!text) continue
+
+            const entries = text.split(';').filter(Boolean)
+            entries.forEach((entry) => {
+              const [side, volStr, priceStr] = entry.split(':')
+              if (!side || !volStr || !priceStr) return
+
+              const type = side === 'bid' ? 'buy' : 'sell'
+              const priceNat = Number(priceStr)
+              const volumeNat = Number(volStr)
+
+              const formattedPrice = convertPriceFromCanister(
+                priceNat,
+                token.decimals,
+                selectedQuote.decimals,
+              )
+              const { volumeInQuote, volumeInBase } = convertVolumeFromCanister(
+                volumeNat,
+                token.decimals,
+                formattedPrice,
+              )
+
+              allDarkOrders.push({
+                id: BigInt(allDarkOrders.length),
+                datetime: '',
+                price: formattedPrice,
+                type,
+                volume: volumeInQuote,
+                volumeInBase,
+                volumeInQuote,
+                quoteDecimals: selectedQuote.decimals,
+                baseDecimals: token.decimals,
+                priceDigitsLimit,
+                ...token,
+              } as TokenDataItem)
+            })
+          } catch (e) {
+            console.warn('Failed to process dark order book', e)
+          }
+        }
+
+        response.darkOrders = addDecimal(allDarkOrders, 2)
       }
 
       // Process transaction history if requested

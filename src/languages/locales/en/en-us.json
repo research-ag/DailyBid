@@ -192,6 +192,19 @@
     "Previous Change": "Previous Change",
     "Next Clearing": "Next Clearing",
     "Select a symbol": "Select a symbol",
-    "No symbols found": "No symbols found"
+    "No symbols found": "No symbols found",
+    "Dark": "Dark",
+    "Dark orders": "Dark orders",
+    "Orders in dark batch": "Orders in dark batch",
+    "Add to Dark Batch": "Add to Dark Batch",
+    "Submit Dark Orders": "Submit Dark Orders",
+    "Clear Dark Batch": "Clear Dark Batch",
+    "Dark orders pending": "Dark orders pending",
+    "Dark order book set successfully": "Dark order book set successfully",
+    "Failed to set dark order book": "Failed to set dark order book",
+    "Cancel dark book": "Cancel dark book",
+    "Cancel dark book pending": "Cancel dark book pending",
+    "Dark book cancelled": "Dark book cancelled",
+    "Cancel dark book rejected": "Cancel dark book rejected"
   }
 }
