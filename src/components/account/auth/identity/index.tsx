@@ -22,17 +22,15 @@ import {
 
 interface IdentityComponentProps {
   onClose: () => void
-  currentIndex: number | null
-  ownIndex: number
+  isSelected?: boolean
   label: string
   identityProvider?: string
-  onAccordionChange: (index: number) => void
+  onAccordionChange: () => void
 }
 
 const IdentityComponent: React.FC<IdentityComponentProps> = ({
   onClose,
-  currentIndex,
-  ownIndex,
+  isSelected,
   label,
   identityProvider,
   onAccordionChange,
@@ -64,8 +62,8 @@ const IdentityComponent: React.FC<IdentityComponentProps> = ({
   return (
     <Accordion
       allowToggle
-      index={currentIndex === ownIndex ? [0] : []}
-      onChange={() => onAccordionChange(ownIndex)}
+      index={isSelected ? [0] : []}
+      onChange={() => onAccordionChange()}
     >
       <AccordionItem border="none">
         <Box

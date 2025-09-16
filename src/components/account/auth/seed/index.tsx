@@ -2,15 +2,15 @@ import React, { useState } from 'react'
 
 import {
   Accordion,
-  AccordionItem,
   AccordionButton,
-  AccordionPanel,
   AccordionIcon,
-  useColorModeValue,
+  AccordionItem,
+  AccordionPanel,
   Box,
   FormControl,
   FormLabel,
   Input,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import { useDispatch } from 'react-redux'
 
@@ -19,15 +19,13 @@ import { seedAuthenticate } from '../../../../utils/authUtils'
 
 interface SeedComponentProps {
   onClose: () => void
-  ownIndex: number
-  currentIndex: number | null
-  onAccordionChange: (index: number) => void
+  isSelected?: boolean
+  onAccordionChange: () => void
 }
 
 const SeedComponent: React.FC<SeedComponentProps> = ({
   onClose,
-  ownIndex,
-  currentIndex,
+  isSelected,
   onAccordionChange,
 }) => {
   const bgColor = useColorModeValue('grey.200', 'grey.600')
@@ -49,8 +47,8 @@ const SeedComponent: React.FC<SeedComponentProps> = ({
   return (
     <Accordion
       allowToggle
-      index={currentIndex === ownIndex ? [0] : []}
-      onChange={() => onAccordionChange(ownIndex)}
+      index={isSelected ? [0] : []}
+      onChange={() => onAccordionChange()}
     >
       <AccordionItem border="none">
         <Box

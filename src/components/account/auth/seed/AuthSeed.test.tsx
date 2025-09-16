@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 
@@ -24,13 +24,11 @@ describe('SeedComponent', () => {
     onAccordionChangeMock = jest.fn()
   })
 
-  const renderComponent = (currentIndex: number | null = null) => {
+  const renderComponent = () => {
     render(
       <Provider store={store}>
         <SeedComponent
           onClose={onCloseMock}
-          ownIndex={0}
-          currentIndex={currentIndex}
           onAccordionChange={onAccordionChangeMock}
         />
       </Provider>,
@@ -51,7 +49,7 @@ describe('SeedComponent', () => {
   })
 
   it('authenticates with the seed when Enter is pressed', async () => {
-    renderComponent(2)
+    renderComponent()
 
     const accordionButton = screen.getByText('Seed (developers only)')
     fireEvent.click(accordionButton)
@@ -73,7 +71,7 @@ describe('SeedComponent', () => {
   })
 
   it('renders the input field and handles state correctly', async () => {
-    renderComponent(2)
+    renderComponent()
 
     const accordionButton = screen.getByText('Seed (developers only)')
     fireEvent.click(accordionButton)

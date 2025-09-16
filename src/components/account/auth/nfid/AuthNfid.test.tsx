@@ -24,13 +24,11 @@ describe('NfidComponent', () => {
     onAccordionChangeMock = jest.fn()
   })
 
-  const renderComponent = (currentIndex: number | null = null) => {
+  const renderComponent = () => {
     render(
       <Provider store={store}>
         <NfidComponent
           onClose={onCloseMock}
-          ownIndex={0}
-          currentIndex={currentIndex}
           onAccordionChange={onAccordionChangeMock}
         />
       </Provider>,
@@ -51,7 +49,7 @@ describe('NfidComponent', () => {
   })
 
   it('calls identityAuthenticate and onClose when Log in button is clicked', async () => {
-    renderComponent(1)
+    renderComponent()
 
     const accordionButton = screen.getByText('NFID')
     fireEvent.click(accordionButton)
@@ -69,7 +67,7 @@ describe('NfidComponent', () => {
   })
 
   it('renders the Log in button and handles its state correctly', () => {
-    renderComponent(1)
+    renderComponent()
 
     const accordionButton = screen.getByText('NFID')
     fireEvent.click(accordionButton)

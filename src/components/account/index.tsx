@@ -97,8 +97,7 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
                   <IdentityComponent
                     onClose={onClose}
                     label={'Internet Identity'}
-                    ownIndex={0}
-                    currentIndex={activeIndex}
+                    isSelected={activeIndex === 0}
                     onAccordionChange={() => handleAccordionChange(0)}
                   />
                 </Box>
@@ -107,8 +106,7 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
                     <IdentityComponent
                       onClose={onClose}
                       label={'Internet Identity 2.0'}
-                      ownIndex={1}
-                      currentIndex={activeIndex}
+                      isSelected={activeIndex === 1}
                       identityProvider={process.env.HTTP_AGENT_HOST_2}
                       onAccordionChange={() => handleAccordionChange(1)}
                     />
@@ -119,16 +117,14 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
                     <Box mt={4}>
                       <NfidComponent
                         onClose={onClose}
-                        ownIndex={2}
-                        currentIndex={activeIndex}
+                        isSelected={activeIndex === 2}
                         onAccordionChange={() => handleAccordionChange(2)}
                       />
                     </Box>
                     <Box mt={4}>
                       <SeedComponent
                         onClose={onClose}
-                        ownIndex={3}
-                        currentIndex={activeIndex}
+                        isSelected={activeIndex === 3}
                         onAccordionChange={() => handleAccordionChange(3)}
                       />
                     </Box>
@@ -137,8 +133,7 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
                 <Box mt={4}>
                   <MnemonicComponent
                     onClose={onClose}
-                    ownIndex={4}
-                    currentIndex={activeIndex}
+                    isSelected={activeIndex === 4}
                     onAccordionChange={() => handleAccordionChange(4)}
                   />
                 </Box>

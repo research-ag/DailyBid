@@ -18,15 +18,13 @@ import { identityAuthenticate } from '../../../../utils/authUtils'
 
 interface NfidComponentProps {
   onClose: () => void
-  ownIndex: number
-  currentIndex: number | null
-  onAccordionChange: (index: number) => void
+  isSelected?: boolean
+  onAccordionChange: () => void
 }
 
 const NfidComponent: React.FC<NfidComponentProps> = ({
   onClose,
-  ownIndex,
-  currentIndex,
+  isSelected,
   onAccordionChange,
 }) => {
   const bgColor = useColorModeValue('grey.200', 'grey.600')
@@ -44,8 +42,8 @@ const NfidComponent: React.FC<NfidComponentProps> = ({
   return (
     <Accordion
       allowToggle
-      index={currentIndex === ownIndex ? [0] : []}
-      onChange={() => onAccordionChange(ownIndex)}
+      index={isSelected ? [0] : []}
+      onChange={() => onAccordionChange()}
     >
       <AccordionItem border="none">
         <Box
