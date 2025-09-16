@@ -17,6 +17,7 @@ import {
   useColorModeValue,
   Radio,
   RadioGroup,
+  Checkbox,
 } from '@chakra-ui/react'
 import { useFormik } from 'formik'
 import { useTranslation } from 'react-i18next'
@@ -69,6 +70,7 @@ const Trading = () => {
 
   const [tradeType, setTradeType] = useState('buy')
   const [typeOrder, setTypeOrder] = useState('Auction')
+  const [darkOrderBookMode, setDarkOrderBookMode] = useState(false)
   const [amountType, setAmountType] = useState('base')
   const [loading, setLoading] = useState(true)
   const [baseStepSize, setBaseStepSize] = useState<number | null>(null)
@@ -965,6 +967,12 @@ const Trading = () => {
     }
   }, [message])
 
+  useEffect(() => {
+    if (typeOrder === 'Immediate') {
+      setDarkOrderBookMode(false)
+    }
+  }, [typeOrder])
+
   return (
     <VStack spacing={4} align="stretch">
       <TradeTypeSelector
@@ -975,9 +983,13 @@ const Trading = () => {
         <VStack align="stretch" spacing={2}>
           <Radio value="Auction">Auction</Radio>
           <Radio value="Immediate">Immediate</Radio>
-          <Radio value="Dark">{t('Dark')}</Radio>
         </VStack>
       </RadioGroup>
+      {typeOrder === 'Auction' && (
+        <Checkbox onChange={(e) => setDarkOrderBookMode(e.target.checked)}>
+          <Text fontSize="14px">{t('Dark orders')}</Text>
+        </Checkbox>
+      )}
       <Flex direction="column">
         <FormControl variant="floating">
           <Input
@@ -1240,7 +1252,39 @@ const Trading = () => {
         />
       ) : (
         <>
-          {typeOrder === 'Dark' && (
+          <Box
+            filter={loading ? 'blur(5px)' : 'none'}
+            pointerEvents={loading ? 'none' : 'auto'}
+          >
+            <Text textAlign="center" fontSize="14px">
+              {t('Available')}:
+            </Text>
+            <Text textAlign="center" fontSize="12px">
+              {available?.volumeInAvailable &&
+              symbol &&
+              selectedQuote &&
+              tradeType ? (
+                <>
+                  {tradeType === 'buy'
+                    ? available.volumeInAvailable.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: selectedQuote?.decimals,
+                      })
+                    : available.volumeInAvailable.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: symbol.decimals,
+                      })}
+                </>
+              ) : (
+                <>{` 0 `}</>
+              )}
+              <Text as="span" fontSize="11px">
+                {` `}
+                {tradeType === 'buy' ? symbol?.quote : symbol?.base}
+              </Text>
+            </Text>
+          </Box>{' '}
+          {darkOrderBookMode && (
             <Box mt={3}>
               <Text textAlign="center" fontSize="12px">
                 {t('Orders in dark batch')}: {darkBatch.length}
@@ -1306,81 +1350,49 @@ const Trading = () => {
               </VStack>
             </Box>
           )}
-          <Box
-            filter={loading ? 'blur(5px)' : 'none'}
-            pointerEvents={loading ? 'none' : 'auto'}
-          >
-            <Text textAlign="center" fontSize="14px">
-              {t('Available')}:
-            </Text>
-            <Text textAlign="center" fontSize="12px">
-              {available?.volumeInAvailable &&
-              symbol &&
-              selectedQuote &&
-              tradeType ? (
-                <>
-                  {tradeType === 'buy'
-                    ? available.volumeInAvailable.toLocaleString('en-US', {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: selectedQuote?.decimals,
-                      })
-                    : available.volumeInAvailable.toLocaleString('en-US', {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: symbol.decimals,
-                      })}
-                </>
-              ) : (
-                <>{` 0 `}</>
-              )}
-              <Text as="span" fontSize="11px">
-                {` `}
-                {tradeType === 'buy' ? symbol?.quote : symbol?.base}
-              </Text>
-            </Text>
-          </Box>{' '}
-          <Flex direction="row" justifyContent="space-between" gap={2}>
-            <Button
-              background="grey.500"
-              variant="solid"
-              h="58px"
-              w={formik.isSubmitting ? '100px' : '150px'}
-              color="grey.25"
-              _hover={{
-                bg: 'grey.400',
-                color: 'grey.25',
-              }}
-              isDisabled={!selectedSymbol || formik.isSubmitting}
-              onClick={handleClearForm}
-            >
-              {t('Reset')}
-            </Button>
-            <Button
-              background={tradeType === 'buy' ? 'green.500' : 'red.500'}
-              variant="solid"
-              h="58px"
-              w={formik.isSubmitting ? '200px' : '150px'}
-              color="grey.25"
-              _hover={{
-                bg: tradeType === 'buy' ? 'green.400' : 'red.400',
-                color: 'grey.25',
-              }}
-              isDisabled={
-                !selectedSymbol || formik.isSubmitting || typeOrder === 'Dark'
-              }
-              onClick={() => formik.handleSubmit()}
-            >
-              {formik.isSubmitting ? (
-                <>
-                  {orderDetails.id !== 0n ? t('Replacing') : t('Creating')}{' '}
-                  <Spinner ml={2} size="sm" color="grey.25" />
-                </>
-              ) : orderDetails.id !== 0n ? (
-                t('Replace')
-              ) : (
-                t('Create')
-              )}
-            </Button>
-          </Flex>
+          {!darkOrderBookMode && (
+            <Flex direction="row" justifyContent="space-between" gap={2}>
+              <Button
+                background="grey.500"
+                variant="solid"
+                h="58px"
+                w={formik.isSubmitting ? '100px' : '150px'}
+                color="grey.25"
+                _hover={{
+                  bg: 'grey.400',
+                  color: 'grey.25',
+                }}
+                isDisabled={!selectedSymbol || formik.isSubmitting}
+                onClick={handleClearForm}
+              >
+                {t('Reset')}
+              </Button>
+              <Button
+                background={tradeType === 'buy' ? 'green.500' : 'red.500'}
+                variant="solid"
+                h="58px"
+                w={formik.isSubmitting ? '200px' : '150px'}
+                color="grey.25"
+                _hover={{
+                  bg: tradeType === 'buy' ? 'green.400' : 'red.400',
+                  color: 'grey.25',
+                }}
+                isDisabled={!selectedSymbol || formik.isSubmitting}
+                onClick={() => formik.handleSubmit()}
+              >
+                {formik.isSubmitting ? (
+                  <>
+                    {orderDetails.id !== 0n ? t('Replacing') : t('Creating')}{' '}
+                    <Spinner ml={2} size="sm" color="grey.25" />
+                  </>
+                ) : orderDetails.id !== 0n ? (
+                  t('Replace')
+                ) : (
+                  t('Create')
+                )}
+              </Button>
+            </Flex>
+          )}
         </>
       )}
       {message && (
