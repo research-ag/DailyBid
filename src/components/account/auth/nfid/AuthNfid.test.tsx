@@ -29,6 +29,7 @@ describe('NfidComponent', () => {
       <Provider store={store}>
         <NfidComponent
           onClose={onCloseMock}
+          ownIndex={0}
           currentIndex={currentIndex}
           onAccordionChange={onAccordionChangeMock}
         />

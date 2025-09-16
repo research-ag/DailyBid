@@ -29,6 +29,7 @@ describe('SeedComponent', () => {
       <Provider store={store}>
         <SeedComponent
           onClose={onCloseMock}
+          ownIndex={0}
           currentIndex={currentIndex}
           onAccordionChange={onAccordionChangeMock}
         />

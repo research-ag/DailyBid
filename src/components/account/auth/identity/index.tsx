@@ -2,33 +2,39 @@ import React from 'react'
 
 import {
   Accordion,
-  AccordionItem,
   AccordionButton,
-  AccordionPanel,
   AccordionIcon,
-  useColorModeValue,
+  AccordionItem,
+  AccordionPanel,
   Box,
-  Flex,
   Button,
+  Flex,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import { useDispatch } from 'react-redux'
 
 import useWindow from '../../../../hooks/useWindow'
 import { AppDispatch } from '../../../../store'
 import {
-  identityAuthenticate,
   generatePublicKey,
+  identityAuthenticate,
 } from '../../../../utils/authUtils'
 
 interface IdentityComponentProps {
   onClose: () => void
   currentIndex: number | null
+  ownIndex: number
+  label: string
+  identityProvider?: string
   onAccordionChange: (index: number) => void
 }
 
 const IdentityComponent: React.FC<IdentityComponentProps> = ({
   onClose,
   currentIndex,
+  ownIndex,
+  label,
+  identityProvider,
   onAccordionChange,
 }) => {
   const bgColor = useColorModeValue('grey.200', 'grey.600')
@@ -50,7 +56,7 @@ const IdentityComponent: React.FC<IdentityComponentProps> = ({
         `${process.env.ENV_LOGIN_II_PROXY_PAGE_LINK}?sessionKey=${publicKey}`,
       )
     } else {
-      await identityAuthenticate(dispatch, 'IC')
+      await identityAuthenticate(dispatch, 'IC', identityProvider)
     }
     onClose()
   }
@@ -58,8 +64,8 @@ const IdentityComponent: React.FC<IdentityComponentProps> = ({
   return (
     <Accordion
       allowToggle
-      index={currentIndex === 0 ? [0] : []}
-      onChange={() => onAccordionChange(0)}
+      index={currentIndex === ownIndex ? [0] : []}
+      onChange={() => onAccordionChange(ownIndex)}
     >
       <AccordionItem border="none">
         <Box
@@ -71,7 +77,7 @@ const IdentityComponent: React.FC<IdentityComponentProps> = ({
           <h2>
             <AccordionButton _expanded={{ bg: bgColor, color: fontColor }}>
               <Box as="span" flex="1" textAlign="left">
-                Internet Identity
+                {label}
               </Box>
               <AccordionIcon />
             </AccordionButton>

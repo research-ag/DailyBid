@@ -29,6 +29,8 @@ describe('IdentityComponent', () => {
       <Provider store={store}>
         <IdentityComponent
           onClose={onCloseMock}
+          label={'Internet Identity'}
+          ownIndex={0}
           currentIndex={currentIndex}
           onAccordionChange={onAccordionChangeMock}
         />

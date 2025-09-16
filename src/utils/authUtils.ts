@@ -1,35 +1,35 @@
 import { HttpAgent, Identity } from '@dfinity/agent'
 import { AuthClient } from '@dfinity/auth-client'
 import {
-  Ed25519KeyIdentity,
   DelegationChain,
   DelegationIdentity,
+  Ed25519KeyIdentity,
   isDelegationValid,
 } from '@dfinity/identity'
 import { Secp256k1KeyIdentity } from '@dfinity/identity-secp256k1'
 
 import {
-  getUserDepositAddress,
   getAccountIdentifier,
   getSubAccountFromPrincipal,
+  getUserDepositAddress,
 } from './convertionsUtils'
 import { AppDispatch } from '../store'
 import {
-  getInternetIdentityDerivationOrigin,
   getAuctionCanisterId,
+  getInternetIdentityDerivationOrigin,
 } from './canisterUtils'
 import {
-  generateBtcDepositAddress,
   depositCyclesCommandString,
+  generateBtcDepositAddress,
 } from './walletUtils'
 import {
-  setUserAgent,
   setIsAuthenticated,
-  setUserPrincipal,
-  setUserDeposit,
+  setUserAgent,
   setUserBtcDepositAddress,
-  setUserIcpLegacyAccount,
+  setUserDeposit,
   setUserDepositCycles,
+  setUserIcpLegacyAccount,
+  setUserPrincipal,
 } from '../store/auth'
 import { getDeviceType } from '../utils/deviceUtils'
 import { getLocation } from '../utils/locationUtils'
@@ -189,17 +189,20 @@ export async function seedAuthenticate(seed: string, dispatch: AppDispatch) {
  * to set the user agent and authentication status.
  * @param dispatch - The dispatch function to trigger actions in the Redux store.
  * @param AuthNetworkTypes - The authentication network type to use, either 'IC' (Internet Computer) or 'NFID'.
+ * @param identityProvider - optionally set AuthClient identityProvider value
  */
 export async function identityAuthenticate(
   dispatch: AppDispatch,
   AuthNetworkTypes: 'IC' | 'NFID',
+  identityProvider?: string,
 ): Promise<void> {
   try {
     const authClient = await AuthClient.create()
     const HTTP_AGENT_HOST =
-      AuthNetworkTypes === 'IC'
+      identityProvider ||
+      (AuthNetworkTypes === 'IC'
         ? `${process.env.HTTP_AGENT_HOST}`
-        : `${process.env.HTTP_AGENT_HOST_NFID}`
+        : `${process.env.HTTP_AGENT_HOST_NFID}`)
 
     const selectedTime = localStorage.getItem(
       'selectedTimeLoginDurationInterval',

@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import {
   Box,
+  Button,
   Drawer,
   DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
   DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
-  DrawerContent,
-  DrawerCloseButton,
-  Button,
   Link,
   useColorModeValue,
 } from '@chakra-ui/react'
@@ -96,24 +96,40 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
                 <Box>
                   <IdentityComponent
                     onClose={onClose}
+                    label={'Internet Identity'}
+                    ownIndex={0}
                     currentIndex={activeIndex}
                     onAccordionChange={() => handleAccordionChange(0)}
                   />
                 </Box>
+                {!!process.env.HTTP_AGENT_HOST_2 && (
+                  <Box mt={4}>
+                    <IdentityComponent
+                      onClose={onClose}
+                      label={'Internet Identity 2.0'}
+                      ownIndex={1}
+                      currentIndex={activeIndex}
+                      identityProvider={process.env.HTTP_AGENT_HOST_2}
+                      onAccordionChange={() => handleAccordionChange(1)}
+                    />
+                  </Box>
+                )}
                 {(!isTelegram || isTelegramWeb || showOtherLogins) && (
                   <>
                     <Box mt={4}>
                       <NfidComponent
                         onClose={onClose}
+                        ownIndex={2}
                         currentIndex={activeIndex}
-                        onAccordionChange={() => handleAccordionChange(1)}
+                        onAccordionChange={() => handleAccordionChange(2)}
                       />
                     </Box>
                     <Box mt={4}>
                       <SeedComponent
                         onClose={onClose}
+                        ownIndex={3}
                         currentIndex={activeIndex}
-                        onAccordionChange={() => handleAccordionChange(2)}
+                        onAccordionChange={() => handleAccordionChange(3)}
                       />
                     </Box>
                   </>
@@ -121,8 +137,9 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
                 <Box mt={4}>
                   <MnemonicComponent
                     onClose={onClose}
+                    ownIndex={4}
                     currentIndex={activeIndex}
-                    onAccordionChange={() => handleAccordionChange(3)}
+                    onAccordionChange={() => handleAccordionChange(4)}
                   />
                 </Box>
                 {isTelegram && !isTelegramWeb && (

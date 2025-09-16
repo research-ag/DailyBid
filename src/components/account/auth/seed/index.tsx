@@ -19,12 +19,14 @@ import { seedAuthenticate } from '../../../../utils/authUtils'
 
 interface SeedComponentProps {
   onClose: () => void
+  ownIndex: number
   currentIndex: number | null
   onAccordionChange: (index: number) => void
 }
 
 const SeedComponent: React.FC<SeedComponentProps> = ({
   onClose,
+  ownIndex,
   currentIndex,
   onAccordionChange,
 }) => {
@@ -47,8 +49,8 @@ const SeedComponent: React.FC<SeedComponentProps> = ({
   return (
     <Accordion
       allowToggle
-      index={currentIndex === 2 ? [0] : []}
-      onChange={() => onAccordionChange(2)}
+      index={currentIndex === ownIndex ? [0] : []}
+      onChange={() => onAccordionChange(ownIndex)}
     >
       <AccordionItem border="none">
         <Box

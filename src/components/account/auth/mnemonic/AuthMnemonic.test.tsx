@@ -51,6 +51,7 @@ describe('MnemonicComponent', () => {
     render(
       <MnemonicComponent
         onClose={mockOnClose}
+        ownIndex={0}
         currentIndex={null}
         onAccordionChange={mockOnAccordionChange}
       />,

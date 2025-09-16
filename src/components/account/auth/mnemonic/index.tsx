@@ -25,12 +25,14 @@ import { encrypt, decrypt } from '../../../../utils/cryptoUtils'
 
 interface MnemonicComponentProps {
   onClose: () => void
+  ownIndex: number
   currentIndex: number | null
   onAccordionChange: (index: number) => void
 }
 
 const MnemonicComponent: React.FC<MnemonicComponentProps> = ({
   onClose,
+  ownIndex,
   currentIndex,
   onAccordionChange,
 }) => {
@@ -112,8 +114,8 @@ const MnemonicComponent: React.FC<MnemonicComponentProps> = ({
   return (
     <Accordion
       allowToggle
-      index={currentIndex === 3 ? [0] : []}
-      onChange={() => onAccordionChange(3)}
+      index={currentIndex === ownIndex ? [0] : []}
+      onChange={() => onAccordionChange(ownIndex)}
     >
       <AccordionItem border="none">
         <Box
