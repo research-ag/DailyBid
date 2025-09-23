@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 
@@ -24,12 +24,12 @@ describe('IdentityComponent', () => {
     onAccordionChangeMock = jest.fn()
   })
 
-  const renderComponent = (currentIndex: number | null = null) => {
+  const renderComponent = () => {
     render(
       <Provider store={store}>
         <IdentityComponent
           onClose={onCloseMock}
-          currentIndex={currentIndex}
+          label={'Internet Identity'}
           onAccordionChange={onAccordionChangeMock}
         />
       </Provider>,
@@ -49,7 +49,7 @@ describe('IdentityComponent', () => {
   })
 
   it('calls identityAuthenticate and onClose when Log in button is clicked', async () => {
-    renderComponent(0)
+    renderComponent()
     const accordionButton = screen.getByText('Internet Identity')
     fireEvent.click(accordionButton)
 
@@ -66,7 +66,7 @@ describe('IdentityComponent', () => {
   })
 
   it('renders the Log in button and handles its state correctly', async () => {
-    renderComponent(0)
+    renderComponent()
     const accordionButton = screen.getByText('Internet Identity')
     fireEvent.click(accordionButton)
 

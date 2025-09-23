@@ -2,14 +2,14 @@ import React from 'react'
 
 import {
   Accordion,
-  AccordionItem,
   AccordionButton,
-  AccordionPanel,
   AccordionIcon,
-  useColorModeValue,
+  AccordionItem,
+  AccordionPanel,
   Box,
-  Flex,
   Button,
+  Flex,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import { useDispatch } from 'react-redux'
 
@@ -18,13 +18,13 @@ import { identityAuthenticate } from '../../../../utils/authUtils'
 
 interface NfidComponentProps {
   onClose: () => void
-  currentIndex: number | null
-  onAccordionChange: (index: number) => void
+  isSelected?: boolean
+  onAccordionChange: () => void
 }
 
 const NfidComponent: React.FC<NfidComponentProps> = ({
   onClose,
-  currentIndex,
+  isSelected,
   onAccordionChange,
 }) => {
   const bgColor = useColorModeValue('grey.200', 'grey.600')
@@ -42,8 +42,8 @@ const NfidComponent: React.FC<NfidComponentProps> = ({
   return (
     <Accordion
       allowToggle
-      index={currentIndex === 1 ? [0] : []}
-      onChange={() => onAccordionChange(1)}
+      index={isSelected ? [0] : []}
+      onChange={() => onAccordionChange()}
     >
       <AccordionItem border="none">
         <Box
