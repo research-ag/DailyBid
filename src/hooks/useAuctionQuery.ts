@@ -17,6 +17,7 @@ export const AUCTION_QUERY_EMPTY_PARAMS: Parameters<
   AuctionService['auction_query']
 >[1] = {
   last_prices: [],
+  last_immediate_prices: [],
   credits: [],
   asks: [],
   bids: [],
@@ -27,6 +28,8 @@ export const AUCTION_QUERY_EMPTY_PARAMS: Parameters<
   deposit_history: [],
   dark_order_books: [],
   immediate_price_history: [],
+  order_book_info: [],
+  immediate_order_book_info: [],
 }
 
 // Date formatting options

@@ -48,16 +48,10 @@ export interface DepositResult {
 
 export type EncryptedOrderBook = [Uint8Array | number[], Uint8Array | number[]]
 
-export interface IndicativeStats {
-  clearing:
-    | { match: { volume: bigint; price: number } }
-    | {
-        noMatch: {
-          minAskPrice: [] | [number]
-          maxBidPrice: [] | [number]
-        }
-      }
+export interface ImmediateOrderBookInfo {
   totalAskVolume: bigint
+  minAskPrice: [] | [number]
+  maxBidPrice: [] | [number]
   totalBidVolume: bigint
 }
 
@@ -122,6 +116,19 @@ export interface Order {
   volume: bigint
   orderBookType: OrderBookType
   price: number
+}
+
+export interface OrderBookInfo {
+  clearing:
+    | { match: { volume: bigint; price: number } }
+    | {
+        noMatch: {
+          minAskPrice: [] | [number]
+          maxBidPrice: [] | [number]
+        }
+      }
+  totalAskVolume: bigint
+  totalBidVolume: bigint
 }
 
 export type OrderBookType = { delayed: null } | { immediate: null }
@@ -202,11 +209,14 @@ export interface _SERVICE {
       {
         last_prices: [] | [boolean]
         credits: [] | [boolean]
+        last_immediate_prices: [] | [boolean]
         dark_order_books: [] | [boolean]
         asks: [] | [boolean]
         bids: [] | [boolean]
+        immediate_order_book_info: [] | [boolean]
         session_numbers: [] | [boolean]
         immediate_price_history: [] | [[bigint, bigint]]
+        order_book_info: [] | [boolean]
         transaction_history: [] | [[bigint, bigint]]
         reversed_history: [] | [boolean]
         price_history: [] | [[bigint, bigint, boolean]]
@@ -218,12 +228,15 @@ export interface _SERVICE {
       credits: Array<
         [Token, { total: bigint; locked: bigint; available: bigint }]
       >
-      dark_order_books: Array<[Principal, EncryptedOrderBook]>
+      last_immediate_prices: Array<[bigint, bigint, Token, bigint, number]>
+      dark_order_books: Array<[Token, EncryptedOrderBook]>
       asks: Array<[OrderId, Order]>
       bids: Array<[OrderId, Order]>
       account_revision: bigint
+      immediate_order_book_info: Array<[Token, ImmediateOrderBookInfo]>
       session_numbers: Array<[Token, SessionNumber]>
       immediate_price_history: Array<[bigint, bigint, Token, bigint, number]>
+      order_book_info: Array<[Token, OrderBookInfo]>
       transaction_history: Array<
         [bigint, bigint, { ask: null } | { bid: null }, Token, bigint, number]
       >
@@ -409,7 +422,7 @@ export interface _SERVICE {
   icrc84_supported_tokens: ActorMethod<[], Array<Token>>
   icrc84_token_info: ActorMethod<[Token], TokenInfo>
   icrc84_withdraw: ActorMethod<[WithdrawArgs], WithdrawResponse>
-  indicativeStats: ActorMethod<[Principal], IndicativeStats>
+  indicativeStats: ActorMethod<[Principal], OrderBookInfo>
   listAdmins: ActorMethod<[], Array<Principal>>
   manageDarkOrderBooks: ActorMethod<
     [Array<[Principal, [] | [EncryptedOrderBook]]>, [] | [bigint]],
