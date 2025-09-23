@@ -1,11 +1,11 @@
 import type {
-  ActorSubclass,
-  HttpAgentOptions,
   ActorConfig,
+  ActorSubclass,
   Agent,
+  HttpAgentOptions,
 } from '@dfinity/agent'
-import type { IDL } from '@dfinity/candid'
 import type { Principal } from '@dfinity/principal'
+import type { IDL } from '@dfinity/candid'
 
 import { _SERVICE } from './icrc1_auction.did'
 
@@ -32,10 +32,10 @@ export declare interface CreateActorOptions {
  * @constructs {@link ActorSubClass}
  * @param {string | Principal} canisterId - ID of the canister the {@link Actor} will talk to
  * @param {CreateActorOptions} options - see {@link CreateActorOptions}
- * @param {CreateActorOptions["agent"]} options.agent - a pre-configured agent you'd like to use. Supercedes agentOptions
- * @param {CreateActorOptions["agentOptions"]} options.agentOptions - options to set up a new agent
+ * @param {CreateActorOptions['agent']} options.agent - a pre-configured agent you'd like to use. Supercedes agentOptions
+ * @param {CreateActorOptions['agentOptions']} options.agentOptions - options to set up a new agent
  * @see {@link HttpAgentOptions}
- * @param {CreateActorOptions["actorOptions"]} options.actorOptions - options for the Actor
+ * @param {CreateActorOptions['actorOptions']} options.actorOptions - options for the Actor
  * @see {@link ActorConfig}
  */
 export declare const createActor: (

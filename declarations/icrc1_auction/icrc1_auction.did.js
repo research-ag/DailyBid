@@ -22,12 +22,11 @@ export const idlFactory = ({ IDL }) => {
   const OrderBookInfo = IDL.Record({
     clearing: IDL.Variant({
       match: IDL.Record({ volume: IDL.Nat, price: IDL.Float64 }),
-      noMatch: IDL.Record({
-        minAskPrice: IDL.Opt(IDL.Float64),
-        maxBidPrice: IDL.Opt(IDL.Float64),
-      }),
+      noMatch: IDL.Null,
     }),
     totalAskVolume: IDL.Nat,
+    minAskPrice: IDL.Opt(IDL.Float64),
+    maxBidPrice: IDL.Opt(IDL.Float64),
     totalBidVolume: IDL.Nat,
   })
   const AccountRevision = IDL.Nat

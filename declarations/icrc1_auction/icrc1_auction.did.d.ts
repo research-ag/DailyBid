@@ -119,15 +119,10 @@ export interface Order {
 }
 
 export interface OrderBookInfo {
-  clearing:
-    | { match: { volume: bigint; price: number } }
-    | {
-        noMatch: {
-          minAskPrice: [] | [number]
-          maxBidPrice: [] | [number]
-        }
-      }
+  clearing: { match: { volume: bigint; price: number } } | { noMatch: null }
   totalAskVolume: bigint
+  minAskPrice: [] | [number]
+  maxBidPrice: [] | [number]
   totalBidVolume: bigint
 }
 
