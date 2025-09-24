@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react'
 
-import { Box, Table, Thead, Tbody, Tr, Th, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Text,
+  Checkbox,
+  Flex,
+} from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 
@@ -12,6 +22,7 @@ const PriceHistory: React.FC = () => {
   const [prices, setPrices] = useState<DataItem[]>([])
   const [loading, setLoading] = useState(true)
   const [toggleVolume, setToggleVolume] = useState('base')
+  const [hideIntermediate, setHideIntermediate] = useState(false)
   const { t } = useTranslation()
   const selectedSymbol = useSelector(
     (state: RootState) => state.tokens.selectedSymbol,
@@ -29,10 +40,13 @@ const PriceHistory: React.FC = () => {
 
   const pricesFiltered = useMemo(() => {
     if (pricesHistory.length > 0) {
-      return [...pricesHistory].slice(0, 17)
+      const list = hideIntermediate
+        ? (pricesHistory as DataItem[]).filter((p) => p.source !== 'immediate')
+        : (pricesHistory as DataItem[])
+      return [...list].slice(0, 17)
     }
     return []
-  }, [pricesHistory])
+  }, [pricesHistory, hideIntermediate])
 
   useEffect(() => {
     setLoading(true)
@@ -49,6 +63,14 @@ const PriceHistory: React.FC = () => {
       filter={loading ? 'blur(5px)' : 'none'}
       pointerEvents={loading ? 'none' : 'auto'}
     >
+      <Flex justifyContent="flex-end" mb={2}>
+        <Checkbox
+          isChecked={hideIntermediate}
+          onChange={(e) => setHideIntermediate(e.target.checked)}
+        >
+          {t('Hide intermediate prices')}
+        </Checkbox>
+      </Flex>
       <Box overflowX="auto">
         <Table variant="unstyled" size="sm">
           <Thead>
@@ -79,10 +101,11 @@ const PriceHistory: React.FC = () => {
           <Tbody>
             {prices.map((data) => (
               <HistoryRow
-                key={data.id}
+                key={`${data.timestamp}-${data.source || 'auction'}`}
                 data={data}
                 symbol={symbol}
                 toggleVolume={toggleVolume}
+                isMerged={!hideIntermediate}
               />
             ))}
           </Tbody>

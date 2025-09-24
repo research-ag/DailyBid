@@ -8,12 +8,14 @@ interface HistoryRowProps {
   data: DataItem
   symbol: Option | null
   toggleVolume: string
+  isMerged: boolean
 }
 
 const HistoryRow: React.FC<HistoryRowProps> = ({
   data,
   symbol,
   toggleVolume,
+  isMerged,
 }) => {
   const volumeInBase = data.volumeInBase.toLocaleString('en-US', {
     minimumFractionDigits: 0,
@@ -30,7 +32,10 @@ const HistoryRow: React.FC<HistoryRowProps> = ({
     maximumFractionDigits: data.volumeInQuoteDecimals,
   })
   return (
-    <Tr key={data.id}>
+    <Tr
+      key={data.id}
+      fontWeight={isMerged && data.source === 'auction' ? 'bold' : 'normal'}
+    >
       <Td textAlign="center">
         {data.price.toLocaleString('en-US', {
           minimumFractionDigits: getMinimumFractionDigits(

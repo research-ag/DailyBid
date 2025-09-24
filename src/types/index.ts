@@ -43,6 +43,8 @@ export interface DataItem {
   volumeInBaseDecimals?: number
   volumeInQuoteDecimals?: number
   priceDigitsLimit?: number
+  source?: 'auction' | 'immediate'
+  timestamp?: number
 }
 export interface TokenMetadata {
   symbol: string

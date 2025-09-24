@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   Box,
@@ -34,6 +34,11 @@ const ChartPlot = () => {
   )
   const priceHistoryData = useSelector(
     (state: RootState) => state.prices.pricesHistory,
+  )
+  const auctionOnlyHistory = useMemo(
+    () =>
+      (priceHistoryData as DataItem[]).filter((p) => p.source !== 'immediate'),
+    [priceHistoryData],
   )
   const isRefreshPrices = useSelector(
     (state: RootState) => state.prices.isRefreshPrices,
@@ -91,21 +96,21 @@ const ChartPlot = () => {
       } else if (newTimeframe === '1M') {
         startDate.setMonth(startDate.getMonth() - 1)
       } else {
-        setChartData(priceHistoryData)
+        setChartData(auctionOnlyHistory)
         return
       }
-      const filtered = priceHistoryData.filter((item) => {
+      const filtered = auctionOnlyHistory.filter((item) => {
         const itemDate = new Date(item.datetime)
         return itemDate >= startDate
       })
       setChartData(filtered)
     },
-    [priceHistoryData],
+    [auctionOnlyHistory],
   )
 
   useEffect(() => {
     onChangeTimeframe(timeframe)
-  }, [priceHistoryData, timeframe, onChangeTimeframe])
+  }, [auctionOnlyHistory, timeframe, onChangeTimeframe])
 
   useEffect(() => {
     fetchPrices()

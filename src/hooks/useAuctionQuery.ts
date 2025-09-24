@@ -113,6 +113,7 @@ const useAuctionQuery = () => {
     selectedSymbol: Option,
     selectedQuote: TokenMetadata,
     priceDigitsLimit: number,
+    source?: 'auction' | 'immediate',
   ): DataItem[] => {
     return priceData
       .filter((_priceData) => Number(_priceData[4]) !== 0)
@@ -138,6 +139,8 @@ const useAuctionQuery = () => {
           quoteDecimals: selectedQuote.decimals,
           baseDecimals: getDecimals(selectedSymbol),
           priceDigitsLimit,
+          source,
+          timestamp: Number(ts) / 1_000_000,
         }
       })
   }
@@ -428,6 +431,7 @@ const useAuctionQuery = () => {
       // Enable requested query types
       if (queryTypes.includes('price_history')) {
         queryParams.price_history = [[BigInt(10000), BigInt(0), true]]
+        queryParams.immediate_price_history = [[BigInt(10000), BigInt(0)]]
       }
 
       if (queryTypes.includes('transaction_history')) {
@@ -475,19 +479,29 @@ const useAuctionQuery = () => {
       response.points = result.points
       response.orderBookInfo = result.order_book_info || []
 
-      // Process price history if requested
+      // Process price history (including immediate) if requested
       if (
         queryTypes.includes('price_history') &&
         selectedSymbol &&
         selectedQuote
       ) {
-        const formattedData = processPriceHistory(
+        const auctionData = processPriceHistory(
           result.price_history || [],
           selectedSymbol,
           selectedQuote,
           priceDigitsLimit,
+          'auction',
         )
-        response.pricesHistory = addDecimal(formattedData, 2)
+        const immediateData = processPriceHistory(
+          result.immediate_price_history || [],
+          selectedSymbol,
+          selectedQuote,
+          priceDigitsLimit,
+          'immediate',
+        )
+        const merged = [...auctionData, ...immediateData]
+        merged.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+        response.pricesHistory = addDecimal(merged, 2)
       }
 
       // Process order data (bids and asks) if requested
