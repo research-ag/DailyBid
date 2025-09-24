@@ -26,19 +26,29 @@ export function calculateHeaderInformation(
 
   const canConvert =
     rawMaxBid !== null || rawMinAsk !== null
-      ? typeof baseDecimals === 'number' && typeof quoteDecimals === 'number' &&
-        baseDecimals >= 0 && quoteDecimals >= 0 &&
+      ? typeof baseDecimals === 'number' &&
+        typeof quoteDecimals === 'number' &&
+        baseDecimals >= 0 &&
+        quoteDecimals >= 0 &&
         (baseDecimals > 0 || quoteDecimals > 0)
       : false
 
   const convertedMaxBid =
     rawMaxBid !== null && canConvert
-      ? convertPriceFromCanister(Number(rawMaxBid), baseDecimals as number, quoteDecimals as number)
+      ? convertPriceFromCanister(
+          Number(rawMaxBid),
+          baseDecimals as number,
+          quoteDecimals as number,
+        )
       : null
 
   const convertedMinAsk =
     rawMinAsk !== null && canConvert
-      ? convertPriceFromCanister(Number(rawMinAsk), baseDecimals as number, quoteDecimals as number)
+      ? convertPriceFromCanister(
+          Number(rawMinAsk),
+          baseDecimals as number,
+          quoteDecimals as number,
+        )
       : null
 
   let headerInformation: HeaderInformation = {
@@ -65,7 +75,9 @@ export function calculateHeaderInformation(
       const changeInDollar = lastPrice - previousPrice
 
       const changeInPercentage =
-        previousPrice !== 0 ? ((lastPrice - previousPrice) / previousPrice) * 100 : 0
+        previousPrice !== 0
+          ? ((lastPrice - previousPrice) / previousPrice) * 100
+          : 0
 
       headerInformation = {
         currentBidAsk: headerInformation.currentBidAsk,
