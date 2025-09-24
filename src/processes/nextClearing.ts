@@ -1,18 +1,17 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import useAuctionQuery from '../hooks/useAuctionQuery'
 import usePriceHistory from '../hooks/usePriceHistory'
-import { RootState, AppDispatch } from '../store'
-import { logout } from '../store/auth'
-import { setUserPoints } from '../store/auth'
+import { AppDispatch, RootState } from '../store'
+import { logout, setUserPoints } from '../store/auth'
 import { setBalances } from '../store/balances'
 import { setOpenOrders } from '../store/orders'
 import {
   setHeaderInformation,
-  setPricesHistory,
   setNextSession,
+  setPricesHistory,
 } from '../store/prices'
 import { setTrades } from '../store/trades'
 import { checkUserAgentDelegation } from '../utils/authUtils'
@@ -142,7 +141,7 @@ const NextClearingComponent: React.FC = () => {
             selectedSymbol: symbol ?? undefined,
             selectedQuote: selectedQuote,
             priceDigitsLimit: orderSettings.orderPriceDigitsLimit,
-            queryTypes: ['price_history'],
+            queryTypes: ['price_history', 'order_book_info'],
           }),
           getQuerys(userAgent, {
             tokens: tokens,
@@ -156,7 +155,7 @@ const NextClearingComponent: React.FC = () => {
         if (!isActive) return
 
         // Extract data from API responses
-        const { pricesHistory: prices = [] } = priceHistoryResult
+        const { pricesHistory: prices = [], orderBookInfo } = priceHistoryResult
         const {
           orders: openOrdersRaw = [],
           trades: tradesRaw = [],
@@ -165,7 +164,10 @@ const NextClearingComponent: React.FC = () => {
         } = userDataResult
 
         // Update Redux store with fetched data
-        const headerInformation = calculateHeaderInformation(prices)
+        const headerInformation = calculateHeaderInformation(
+          prices,
+          orderBookInfo[0][1],
+        )
         dispatch(setHeaderInformation(headerInformation))
         dispatch(setPricesHistory(prices))
         dispatch(setBalances(balancesCredits))

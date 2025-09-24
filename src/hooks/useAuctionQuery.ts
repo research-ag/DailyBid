@@ -136,6 +136,7 @@ const useAuctionQuery = () => {
           ...values,
           volume: values.volumeInBase,
           quoteDecimals: selectedQuote.decimals,
+          baseDecimals: getDecimals(selectedSymbol),
           priceDigitsLimit,
         }
       })
@@ -369,6 +370,7 @@ const useAuctionQuery = () => {
     | 'session_numbers'
     | 'credits'
     | 'last_prices'
+    | 'order_book_info'
   /**
    * Fetches and returns data based on requested query types.
    *
@@ -457,6 +459,10 @@ const useAuctionQuery = () => {
         queryParams.last_prices = [true]
       }
 
+      if (queryTypes.includes('order_book_info')) {
+        queryParams.order_book_info = [true]
+      }
+
       // Make the canister query
       const principalParam = principal ? [Principal.fromText(principal)] : []
       const result = await serviceActor.auction_query(
@@ -467,6 +473,7 @@ const useAuctionQuery = () => {
       // Process the results based on requested query types
       const response: any = {}
       response.points = result.points
+      response.orderBookInfo = result.order_book_info || []
 
       // Process price history if requested
       if (

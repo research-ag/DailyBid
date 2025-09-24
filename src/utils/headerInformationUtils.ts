@@ -1,5 +1,9 @@
 import { DataItem, HeaderInformation } from '../types'
-import { fixDecimal } from '../utils/calculationsUtils'
+import {
+  fixDecimal,
+  convertPriceFromCanister,
+} from '../utils/calculationsUtils'
+import { OrderBookInfo } from '@declarations/icrc1_auction/icrc1_auction.did'
 
 /**
  * Calculates and returns the header information based on the given prices.
@@ -10,9 +14,28 @@ import { fixDecimal } from '../utils/calculationsUtils'
  * @param nextSession - The next session to be displayed in the header information.
  * @returns The calculated HeaderInformation object.
  */
-export function calculateHeaderInformation(prices: DataItem[]) {
+export function calculateHeaderInformation(
+  prices: DataItem[],
+  orderBookInfo: OrderBookInfo,
+) {
+  const baseDecimals = prices[0]?.baseDecimals ?? 0
+  const quoteDecimals = prices[0]?.quoteDecimals ?? 0
+
+  const rawMaxBid = orderBookInfo?.maxBidPrice?.[0] ?? null
+  const rawMinAsk = orderBookInfo?.minAskPrice?.[0] ?? null
+
+  const convertedMaxBid =
+    rawMaxBid !== null
+      ? convertPriceFromCanister(Number(rawMaxBid), baseDecimals, quoteDecimals)
+      : null
+
+  const convertedMinAsk =
+    rawMinAsk !== null
+      ? convertPriceFromCanister(Number(rawMinAsk), baseDecimals, quoteDecimals)
+      : null
+
   let headerInformation: HeaderInformation = {
-    lastAuction: '',
+    currentBidAsk: [convertedMaxBid, convertedMinAsk],
     previousChange: {
       amount: '',
       percentage: '',
@@ -38,7 +61,7 @@ export function calculateHeaderInformation(prices: DataItem[]) {
         ((lastPrice - previousPrice) / previousPrice) * 100
 
       headerInformation = {
-        lastAuction: Number(fixDecimal(lastPrice, priceDigitsLimit)),
+        currentBidAsk: headerInformation.currentBidAsk,
         previousChange: {
           amount: Number(fixDecimal(changeInDollar, priceDigitsLimit)),
           percentage: changeInPercentage,
@@ -69,6 +92,7 @@ export function calculateHeaderInformation(prices: DataItem[]) {
 
     return 0
   }
+
   headerInformation = calculatePrices(prices, headerInformation)
   headerInformation.periodVolume = calculateVolume(prices)
 

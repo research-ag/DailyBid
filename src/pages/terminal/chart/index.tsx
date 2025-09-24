@@ -1,19 +1,19 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   Box,
-  Switch,
   Button,
   FormControl,
   FormLabel,
+  Switch,
   useColorModeValue,
 } from '@chakra-ui/react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import EChart from './echart'
 //import Chart from './chart'
 import useAuctionQuery from '../../../hooks/useAuctionQuery'
-import { RootState, AppDispatch } from '../../../store'
+import { AppDispatch, RootState } from '../../../store'
 import { setHeaderInformation, setPricesHistory } from '../../../store/prices'
 import { DataItem } from '../../../types'
 import { calculateHeaderInformation } from '../../../utils/headerInformationUtils'
@@ -53,14 +53,20 @@ const ChartPlot = () => {
       dispatch(setHeaderInformation(null))
 
       const { getQuerys } = useAuctionQuery()
-      const { pricesHistory: prices = [] } = await getQuerys(userAgent, {
-        selectedSymbol: symbol,
-        selectedQuote: selectedQuote,
-        priceDigitsLimit: orderSettings.orderPriceDigitsLimit,
-        queryTypes: ['price_history'],
-      })
+      const { pricesHistory: prices, orderBookInfo } = await getQuerys(
+        userAgent,
+        {
+          selectedSymbol: symbol,
+          selectedQuote: selectedQuote,
+          priceDigitsLimit: orderSettings.orderPriceDigitsLimit,
+          queryTypes: ['price_history', 'order_book_info'],
+        },
+      )
 
-      const headerInformationCalculated = calculateHeaderInformation(prices)
+      const headerInformationCalculated = calculateHeaderInformation(
+        prices,
+        orderBookInfo[0][1],
+      )
 
       dispatch(setHeaderInformation(headerInformationCalculated))
 

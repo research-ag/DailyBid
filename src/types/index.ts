@@ -12,7 +12,7 @@ export interface Option extends OptionBymax {
   periodVolume?: number
 }
 export interface HeaderInformation {
-  lastAuction: number | string
+  currentBidAsk: [number | null, number | null]
   previousChange: {
     amount: number | string
     percentage: number | string

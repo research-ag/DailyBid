@@ -167,8 +167,8 @@ const usePriceHistory = () => {
           0,
         ).volumeInBase
       } else if ('noMatch' in indicativeStats.clearing) {
-        minAskPrice = indicativeStats.clearing.noMatch.minAskPrice
-        maxBidPrice = indicativeStats.clearing.noMatch.maxBidPrice
+        minAskPrice = indicativeStats.minAskPrice
+        maxBidPrice = indicativeStats.maxBidPrice
 
         formattedMinAskPrice =
           minAskPrice !== null
