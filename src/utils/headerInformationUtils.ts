@@ -18,20 +18,27 @@ export function calculateHeaderInformation(
   prices: DataItem[],
   orderBookInfo: OrderBookInfo,
 ) {
-  const baseDecimals = prices[0]?.baseDecimals ?? 0
-  const quoteDecimals = prices[0]?.quoteDecimals ?? 0
+  const baseDecimals = prices[0]?.baseDecimals
+  const quoteDecimals = prices[0]?.quoteDecimals
 
   const rawMaxBid = orderBookInfo?.maxBidPrice?.[0] ?? null
   const rawMinAsk = orderBookInfo?.minAskPrice?.[0] ?? null
 
+  const canConvert =
+    rawMaxBid !== null || rawMinAsk !== null
+      ? typeof baseDecimals === 'number' && typeof quoteDecimals === 'number' &&
+        baseDecimals >= 0 && quoteDecimals >= 0 &&
+        (baseDecimals > 0 || quoteDecimals > 0)
+      : false
+
   const convertedMaxBid =
-    rawMaxBid !== null
-      ? convertPriceFromCanister(Number(rawMaxBid), baseDecimals, quoteDecimals)
+    rawMaxBid !== null && canConvert
+      ? convertPriceFromCanister(Number(rawMaxBid), baseDecimals as number, quoteDecimals as number)
       : null
 
   const convertedMinAsk =
-    rawMinAsk !== null
-      ? convertPriceFromCanister(Number(rawMinAsk), baseDecimals, quoteDecimals)
+    rawMinAsk !== null && canConvert
+      ? convertPriceFromCanister(Number(rawMinAsk), baseDecimals as number, quoteDecimals as number)
       : null
 
   let headerInformation: HeaderInformation = {
@@ -58,7 +65,7 @@ export function calculateHeaderInformation(
       const changeInDollar = lastPrice - previousPrice
 
       const changeInPercentage =
-        ((lastPrice - previousPrice) / previousPrice) * 100
+        previousPrice !== 0 ? ((lastPrice - previousPrice) / previousPrice) * 100 : 0
 
       headerInformation = {
         currentBidAsk: headerInformation.currentBidAsk,
