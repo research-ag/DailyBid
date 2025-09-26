@@ -73,6 +73,7 @@ export interface PricesState {
   nextSession: string | null
   pricesHistory: DataItem[] | []
   pricesInfo: TokenApi[] | []
+  hideIntermediate: boolean
 }
 export interface TokenDataItem extends DataItem, TokenMetadata {
   [key: string]: any

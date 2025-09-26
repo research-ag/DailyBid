@@ -12,23 +12,27 @@ import {
   Flex,
 } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 import HistoryRow from './historyRow'
 import { RootState } from '../../../../store'
 import { DataItem } from '../../../../types'
+import { setHideIntermediate } from '../../../../store/prices'
 
 const PriceHistory: React.FC = () => {
   const [prices, setPrices] = useState<DataItem[]>([])
   const [loading, setLoading] = useState(true)
   const [toggleVolume, setToggleVolume] = useState('base')
-  const [hideIntermediate, setHideIntermediate] = useState(false)
   const { t } = useTranslation()
+  const dispatch = useDispatch()
   const selectedSymbol = useSelector(
     (state: RootState) => state.tokens.selectedSymbol,
   )
   const pricesHistory = useSelector(
     (state: RootState) => state.prices.pricesHistory,
+  )
+  const hideIntermediate = useSelector(
+    (state: RootState) => state.prices.hideIntermediate,
   )
   const symbol = Array.isArray(selectedSymbol)
     ? selectedSymbol[0]
@@ -66,7 +70,7 @@ const PriceHistory: React.FC = () => {
       <Flex justifyContent="flex-end" mb={2}>
         <Checkbox
           isChecked={hideIntermediate}
-          onChange={(e) => setHideIntermediate(e.target.checked)}
+          onChange={(e) => dispatch(setHideIntermediate(e.target.checked))}
         >
           {t('Hide intermediate prices')}
         </Checkbox>
