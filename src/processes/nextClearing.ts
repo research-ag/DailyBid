@@ -141,7 +141,7 @@ const NextClearingComponent: React.FC = () => {
             selectedSymbol: symbol ?? undefined,
             selectedQuote: selectedQuote,
             priceDigitsLimit: orderSettings.orderPriceDigitsLimit,
-            queryTypes: ['price_history', 'order_book_info'],
+            queryTypes: ['price_history', 'immediate_order_book_info'],
           }),
           getQuerys(userAgent, {
             tokens: tokens,
@@ -155,7 +155,8 @@ const NextClearingComponent: React.FC = () => {
         if (!isActive) return
 
         // Extract data from API responses
-        const { pricesHistory: prices = [], orderBookInfo } = priceHistoryResult
+        const { pricesHistory: prices = [], immediateOrderBookInfo } =
+          priceHistoryResult
         const {
           orders: openOrdersRaw = [],
           trades: tradesRaw = [],
@@ -166,7 +167,7 @@ const NextClearingComponent: React.FC = () => {
         // Update Redux store with fetched data
         const headerInformation = calculateHeaderInformation(
           prices,
-          orderBookInfo[0][1],
+          immediateOrderBookInfo[0][1],
         )
         dispatch(setHeaderInformation(headerInformation))
         dispatch(setPricesHistory(prices))

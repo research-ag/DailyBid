@@ -60,19 +60,19 @@ const ChartPlot = () => {
       dispatch(setHeaderInformation(null))
 
       const { getQuerys } = useAuctionQuery()
-      const { pricesHistory: prices, orderBookInfo } = await getQuerys(
+      const { pricesHistory: prices, immediateOrderBookInfo } = await getQuerys(
         userAgent,
         {
           selectedSymbol: symbol,
           selectedQuote: selectedQuote,
           priceDigitsLimit: orderSettings.orderPriceDigitsLimit,
-          queryTypes: ['price_history', 'order_book_info'],
+          queryTypes: ['price_history', 'immediate_order_book_info'],
         },
       )
 
       const headerInformationCalculated = calculateHeaderInformation(
         prices,
-        orderBookInfo[0][1],
+        immediateOrderBookInfo[0][1],
       )
 
       dispatch(setHeaderInformation(headerInformationCalculated))

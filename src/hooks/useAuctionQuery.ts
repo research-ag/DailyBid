@@ -373,7 +373,7 @@ const useAuctionQuery = () => {
     | 'session_numbers'
     | 'credits'
     | 'last_prices'
-    | 'order_book_info'
+    | 'immediate_order_book_info'
   /**
    * Fetches and returns data based on requested query types.
    *
@@ -463,8 +463,8 @@ const useAuctionQuery = () => {
         queryParams.last_prices = [true]
       }
 
-      if (queryTypes.includes('order_book_info')) {
-        queryParams.order_book_info = [true]
+      if (queryTypes.includes('immediate_order_book_info')) {
+        queryParams.immediate_order_book_info = [true]
       }
 
       // Make the canister query
@@ -477,7 +477,7 @@ const useAuctionQuery = () => {
       // Process the results based on requested query types
       const response: any = {}
       response.points = result.points
-      response.orderBookInfo = result.order_book_info || []
+      response.immediateOrderBookInfo = result.immediate_order_book_info || []
 
       // Process price history (including immediate) if requested
       if (

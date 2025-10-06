@@ -3,7 +3,7 @@ import {
   fixDecimal,
   convertPriceFromCanister,
 } from '../utils/calculationsUtils'
-import { OrderBookInfo } from '@declarations/icrc1_auction/icrc1_auction.did'
+import { ImmediateOrderBookInfo } from '@declarations/icrc1_auction/icrc1_auction.did'
 
 /**
  * Calculates and returns the header information based on the given prices.
@@ -11,12 +11,12 @@ import { OrderBookInfo } from '@declarations/icrc1_auction/icrc1_auction.did'
  * and the total volume over a specific period.
  *
  * @param prices - An array of DataItem objects containing price and volume information.
- * @param nextSession - The next session to be displayed in the header information.
+ * @param orderBookInfo - Immediate order book information.
  * @returns The calculated HeaderInformation object.
  */
 export function calculateHeaderInformation(
   prices: DataItem[],
-  orderBookInfo: OrderBookInfo,
+  orderBookInfo: ImmediateOrderBookInfo,
 ) {
   const baseDecimals = prices[0]?.baseDecimals
   const quoteDecimals = prices[0]?.quoteDecimals
