@@ -58,6 +58,8 @@ module.exports = {
     'node',
   ],
   rules: {
+    'node/no-missing-import': 'off',
+    'import/no-unresolved': 'error',
     'jsx-a11y/no-autofocus': 'warn',
     'react/prop-types': 'off',
     'react-hooks/exhaustive-deps': 'off',

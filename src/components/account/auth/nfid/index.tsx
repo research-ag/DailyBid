@@ -15,6 +15,7 @@ import { useDispatch } from 'react-redux'
 
 import { AppDispatch } from '../../../../store'
 import { identityAuthenticate } from '../../../../utils/authUtils'
+import { customPopup, getDeviceType } from '../../../../utils/deviceUtils'
 
 interface NfidComponentProps {
   onClose: () => void
@@ -35,7 +36,16 @@ const NfidComponent: React.FC<NfidComponentProps> = ({
   const dispatch = useDispatch<AppDispatch>()
 
   const handleClick = async () => {
-    await identityAuthenticate(dispatch, 'NFID')
+    try {
+      const deviceType = getDeviceType()
+      if (deviceType === 'desktop') {
+        await identityAuthenticate(dispatch, 'NFID')
+      } else {
+        await customPopup(() => identityAuthenticate(dispatch, 'NFID'))
+      }
+    } catch (error) {
+      alert(error)
+    }
     onClose()
   }
 

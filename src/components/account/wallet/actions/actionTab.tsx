@@ -33,9 +33,19 @@ const ActionTab: React.FC<ActionTabProps> = ({ tokens }) => {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const actions = useSelector((state: RootState) => state.actions.actions)
-  const loading = actions.length === 0
+  const loading = isLoading && actions.length === 0
+
+  // Add timeout for loading state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 10000)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   const token =
     Array.isArray(symbol) && symbol.length > 0

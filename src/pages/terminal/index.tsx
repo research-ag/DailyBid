@@ -84,7 +84,7 @@ const Terminal: React.FC = () => {
             px={4}
             pt={4}
             borderRadius="md"
-            h="40vh"
+            h="45vh"
           >
             <Chart />
           </Box>

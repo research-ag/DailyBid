@@ -71,7 +71,7 @@ const AuctionsEChart: React.FC<Props> = ({ data, volumeAxis }) => {
       grid: [
         {
           top: '4%',
-          height: '90%',
+          height: '88%',
         },
       ],
       xAxis: {
@@ -184,7 +184,7 @@ const AuctionsEChart: React.FC<Props> = ({ data, volumeAxis }) => {
     }
   }, [data, colorMode, theme, volumeAxis, width])
 
-  return <Box position="relative" ref={chartRef} h="30vh" />
+  return <Box position="relative" ref={chartRef} h="39vh" />
 }
 
 export default AuctionsEChart

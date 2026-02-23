@@ -14,13 +14,14 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 import { useFormik } from 'formik'
+import { useWallet as useWalletPackage } from 'icrc84-package'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import * as Yup from 'yup'
 
+import { idlFactory as Icrc84IDLFactory } from '../../../../declarations/icrc1_auction/icrc1_auction.did'
 import useAuctionQuery from '../../../hooks/useAuctionQuery'
 import useOrders from '../../../hooks/useOrders'
-import useWallet from '../../../hooks/useWallet'
 import { RootState, AppDispatch } from '../../../store'
 import { setIsRefreshBalances } from '../../../store/balances'
 import { setIsRefreshUserData } from '../../../store/orders'
@@ -48,6 +49,8 @@ const fullWithdrawSettings: React.FC = () => {
   const { userAgent } = useSelector((state: RootState) => state.auth)
   const tokens = useSelector((state: RootState) => state.tokens.tokens)
 
+  const canisterId = `${process.env.CANISTER_ID_ICRC_AUCTION}`
+
   const fetchManageOrders = useCallback(async () => {
     const { manageOrders } = useOrders()
     return await manageOrders(userAgent)
@@ -55,7 +58,11 @@ const fullWithdrawSettings: React.FC = () => {
 
   const fetchWithdrawals = useCallback(
     async (account: string) => {
-      const { withdrawCredit } = useWallet()
+      const { withdrawCredit } = useWalletPackage(
+        userAgent,
+        canisterId,
+        Icrc84IDLFactory,
+      )
 
       try {
         const { getQuerys } = useAuctionQuery()
@@ -70,7 +77,6 @@ const fullWithdrawSettings: React.FC = () => {
           )
           .map(async (balance: TokenDataItem) => {
             const response = await withdrawCredit(
-              userAgent,
               balance.principal,
               account,
               Number(balance.volumeInTotalNat),

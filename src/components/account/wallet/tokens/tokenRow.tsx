@@ -30,13 +30,14 @@ import {
 import { HttpAgent } from '@dfinity/agent'
 import { Select } from 'bymax-react-select'
 import { useFormik } from 'formik'
+import { useWallet as useWalletPackage } from 'icrc84-package'
 import { useTranslation } from 'react-i18next'
 import { LuDownload, LuUpload } from 'react-icons/lu'
 import { RiHandCoinLine } from 'react-icons/ri'
 import * as Yup from 'yup'
 
+import { idlFactory as Icrc84IDLFactory } from '../../../../../declarations/icrc1_auction/icrc1_auction.did'
 import customStyles from '../../../../common/styles'
-import useWallet from '../../../../hooks/useWallet'
 import { TokenDataItem, TokenMetadata, Option } from '../../../../types'
 import {
   fixDecimal,
@@ -89,6 +90,8 @@ const TokenRow: React.FC<TokenRowProps> = ({
   const [maxDepositAllowance, setMaxDepositAllowance] = useState<string | null>(
     null,
   )
+
+  const canisterId = `${process.env.CANISTER_ID_ICRC_AUCTION}`
 
   const claimTooltipTextStandard = (
     <>
@@ -250,12 +253,15 @@ const TokenRow: React.FC<TokenRowProps> = ({
 
   const getBalanceOf = useCallback(
     async (account: string | null = null) => {
-      const { getBalance } = useWallet()
+      const { getBalance } = useWalletPackage(
+        userAgent,
+        canisterId,
+        Icrc84IDLFactory,
+      )
       const accountData = account ? account : userPrincipal
       const action = !account ? 'claim' : 'deposit'
 
       return await getBalance(
-        userAgent,
         [token],
         `${token.principal}`,
         accountData,
@@ -268,12 +274,15 @@ const TokenRow: React.FC<TokenRowProps> = ({
   const handleTrackedDeposit = useCallback(async () => {
     setClaimTooltipText(claimTooltipTextStandard)
 
-    const { getTrackedDeposit } = useWallet()
+    const { getTrackedDeposit } = useWalletPackage(
+      userAgent,
+      canisterId,
+      Icrc84IDLFactory,
+    )
 
     const balanceOf = await getBalanceOf()
 
     const trackedDeposit = await getTrackedDeposit(
-      userAgent,
       [token],
       `${token.principal}`,
     )
@@ -352,10 +361,13 @@ const TokenRow: React.FC<TokenRowProps> = ({
     setMaxDepositAllowance(null)
 
     if (formik.values.account) {
-      const { getDepositAllowanceInfo } = useWallet()
+      const { getDepositAllowanceInfo } = useWalletPackage(
+        userAgent,
+        canisterId,
+        Icrc84IDLFactory,
+      )
 
       const result = await getDepositAllowanceInfo(
-        userAgent,
         token.principal,
         formik.values.account,
       )

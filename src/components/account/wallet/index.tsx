@@ -19,6 +19,7 @@ import {
   useClipboard,
 } from '@chakra-ui/react'
 import { Principal } from '@dfinity/principal'
+import { useWallet as useWalletPackage } from 'icrc84-package'
 import { useTranslation } from 'react-i18next'
 import { FaBitcoin } from 'react-icons/fa'
 import { useSelector, useDispatch } from 'react-redux'
@@ -26,6 +27,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import ActionTab from './actions/actionTab'
 import LedgerTab from './ledger/ledgerTab'
 import TokenTab from './tokens/tokenTab'
+import { idlFactory as Icrc84IDLFactory } from '../../../../declarations/icrc1_auction/icrc1_auction.did'
 import Cycles from '../../../assets/img/coins/cycles.svg'
 import IcpMonoIcon from '../../../assets/img/coins/icp_mono.svg'
 import WalletIconDark from '../../../assets/img/common/wallet-black.svg'
@@ -112,6 +114,8 @@ const WalletContent: React.FC = () => {
   const userBtcDepositAddress = formatWalletAddress(userBtcDeposit)
   const userIcpLegacyAccountAddress = formatWalletAddress(userIcpLegacyAccount)
 
+  const canisterId = `${process.env.CANISTER_ID_ICRC_AUCTION}`
+
   const { onCopy: onCopyUserDeposit } = useClipboard(userDeposit)
   const { onCopy: onCopyBtcAddress } = useClipboard(userBtcDeposit)
   const { onCopy: onCopyIcpLegacyAddress } = useClipboard(userIcpLegacyAccount)
@@ -122,6 +126,9 @@ const WalletContent: React.FC = () => {
       {t(`ICRC-1 Tokens. Transfer here or set as allowance spender:`)}
       <br />
       {userDeposit}
+      <br />
+      <br />
+      {t('Click on icon on left to display QR code.')}
     </>
   )
 
@@ -130,6 +137,9 @@ const WalletContent: React.FC = () => {
       {t(`Bitcoin. Transfer here:`)}
       <br />
       {userBtcDeposit}
+      <br />
+      <br />
+      {t('Click on icon on left to display QR code.')}
     </>
   )
 
@@ -138,6 +148,9 @@ const WalletContent: React.FC = () => {
       {t(`ICP Legacy. Transfer here:`)}
       <br />
       {userIcpLegacyAccount}
+      <br />
+      <br />
+      {t('Click on icon on left to display QR code.')}
     </>
   )
 
@@ -215,15 +228,18 @@ const WalletContent: React.FC = () => {
   const handleAllTrackedDeposits = useCallback(async () => {
     setClaimTooltipText(claimTooltipTextStandard)
 
-    const { getTrackedDeposit, getBalance } = useWallet()
+    const { getTrackedDeposit, getBalance } = useWalletPackage(
+      userAgent,
+      canisterId,
+      Icrc84IDLFactory,
+    )
 
-    const trackedDeposit = await getTrackedDeposit(userAgent, tokens, '')
+    const trackedDeposit = await getTrackedDeposit(tokens, '')
 
     const tokensBalance: ClaimTokenBalance[] = []
     const claims = await Promise.all(
       balances.map(async (token) => {
         const balanceOf = await getBalance(
-          userAgent,
           [token],
           `${token.principal}`,
           userPrincipal,
@@ -366,7 +382,11 @@ const WalletContent: React.FC = () => {
   const handleNotify = useCallback(
     (principal: string | undefined, base: string) => {
       const startTime = Date.now()
-      const { balanceNotify } = useWallet()
+      const { balanceNotify } = useWalletPackage(
+        userAgent,
+        canisterId,
+        Icrc84IDLFactory,
+      )
 
       const loadingNotify = (base: string, notifyLoading: boolean) => {
         setLocalBalances((prevBalances) =>
@@ -385,11 +405,11 @@ const WalletContent: React.FC = () => {
         isClosable: true,
       })
 
-      balanceNotify(userAgent, principal)
+      balanceNotify(principal)
         .then(async (response: Result) => {
           const endTime = Date.now()
           const durationInSeconds = (endTime - startTime) / 1000
-
+          console.log('response: ', response)
           if (Object.keys(response).includes('Ok')) {
             await fetchBalances()
             const token = balances.find((balance) => balance.base === base)
@@ -713,8 +733,12 @@ const WalletContent: React.FC = () => {
             console.error('Withdraw failed:', message)
           })
       } else {
-        const { withdrawCredit } = useWallet()
-        withdrawCredit(userAgent, `${token.principal}`, account, Number(volume))
+        const { withdrawCredit } = useWalletPackage(
+          userAgent,
+          canisterId,
+          Icrc84IDLFactory,
+        )
+        withdrawCredit(token.principal, account, Number(volume))
           .then((response: Result | null) => {
             const endTime = Date.now()
             const durationInSeconds = (endTime - startTime) / 1000
@@ -830,8 +854,12 @@ const WalletContent: React.FC = () => {
         isClosable: true,
       })
 
-      const { deposit } = useWallet()
-      deposit(userAgent, `${token.principal}`, account, Number(volume))
+      const { deposit } = useWalletPackage(
+        userAgent,
+        canisterId,
+        Icrc84IDLFactory,
+      )
+      deposit(`${token.principal}`, account, Number(volume))
         .then((response: Result | null) => {
           const endTime = Date.now()
           const durationInSeconds = (endTime - startTime) / 1000

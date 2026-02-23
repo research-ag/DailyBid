@@ -327,3 +327,58 @@ export const mnemonicAuthenticate = async (
     console.error('Authentication failed:', error)
   }
 }
+
+/**
+ * Authenticates the user using Sign-In with Ethereum (SIWE)
+ * @param dispatch - The dispatch function to trigger actions in the Redux store.
+ * @param login - The login function from the SIWE identity provider.
+ * @returns A promise that resolves when authentication is complete.
+ */
+export const siweAuthenticate = async (
+  dispatch: AppDispatch,
+  login: () => Promise<DelegationIdentity | undefined>,
+): Promise<void> => {
+  try {
+    const siweIdentity = await login()
+
+    if (!siweIdentity) {
+      throw new Error(
+        'Failed to generate identity from SIWE. No identity returned from login.',
+      )
+    }
+
+    const myAgent = getAgent(siweIdentity)
+
+    await doLogin(myAgent, dispatch, 'Ethereum')
+  } catch (err) {
+    console.error('Eth Login Error:', err)
+    // Rethrow the error to allow proper handling in the component
+    throw err
+  }
+}
+/**
+ * Authenticates the user using Sign-In with Solana (SIWS)
+ * @param dispatch - The dispatch function to trigger actions in the Redux store.
+ * @param identity - An identity object returned from the SIWS login process, used to create an authenticated agent.
+ * @returns A promise that resolves when authentication is complete.
+ */
+export const siwsAuthenticate = async (
+  dispatch: AppDispatch,
+  identity: Identity,
+): Promise<void> => {
+  try {
+    if (!identity) {
+      throw new Error(
+        'Failed to generate identity from SIWS. No identity returned from login.',
+      )
+    }
+
+    const myAgent = getAgent(identity)
+
+    await doLogin(myAgent, dispatch, 'Solana')
+  } catch (err) {
+    console.error('Solana Login Error:', err)
+    // Rethrow the error to allow proper handling in the component
+    throw err
+  }
+}

@@ -26,7 +26,7 @@ const parseMetadata = (
   let name = 'unknown'
   let decimals = 0
   let logo = ''
-  let fee = ''
+  let fee = 0
 
   metadata.forEach((entry) => {
     switch (entry[0]) {
@@ -43,7 +43,7 @@ const parseMetadata = (
         logo = (entry[1] as { Text: string }).Text
         break
       case IcrcMetadataResponseEntries.FEE:
-        fee = (entry[1] as unknown as { Nat: string }).Nat.toString()
+        fee = Number((entry[1] as unknown as { Nat: string }).Nat)
         break
     }
   })
@@ -59,6 +59,7 @@ const parseMetadata = (
     decimals,
     logo,
     fee,
+    feeNat: fee.toString(),
     base: symbol,
     quote: quoteToken ? quoteToken : quoteTokenDefault,
   }
@@ -143,7 +144,8 @@ export function getToken(
     name: '',
     decimals: 0,
     logo: '',
-    fee: '',
+    fee: 0,
+    feeNat: '0',
     quote: '',
     base: '',
     principal: '',

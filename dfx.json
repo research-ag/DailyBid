@@ -7,6 +7,22 @@
       "source": ["dist/"],
       "build": "npm run build",
       "type": "assets"
+    },
+    "ic_siwe_provider": {
+      "type": "custom",
+      "candid": "https://github.com/kristoferlund/ic-siwe/releases/download/v0.1.1/ic_siwe_provider.did",
+      "wasm": "https://github.com/kristoferlund/ic-siwe/releases/download/v0.1.1/ic_siwe_provider.wasm.gz",
+      "declarations": {
+        "output": "declarations/ic_siwe_provider"
+      }
+    },
+    "ic_siws_provider": {
+      "type": "custom",
+      "candid": "https://github.com/kristoferlund/ic-siws/releases/download/v0.1.0/ic_siws_provider.did",
+      "wasm": "https://github.com/kristoferlund/ic-siws/releases/download/v0.1.0/ic_siws_provider.wasm.gz",
+      "declarations": {
+        "output": "declarations/ic_siws_provider"
+      }
     }
   },
   "defaults": {

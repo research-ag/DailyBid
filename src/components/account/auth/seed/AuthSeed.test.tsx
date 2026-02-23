@@ -45,7 +45,7 @@ describe('SeedComponent', () => {
     const accordionButton = screen.getByText('Seed (developers only)')
     fireEvent.click(accordionButton)
 
-    expect(onAccordionChangeMock).toHaveBeenCalledWith(2)
+    expect(onAccordionChangeMock).toHaveBeenCalledWith(4)
   })
 
   it('authenticates with the seed when Enter is pressed', async () => {

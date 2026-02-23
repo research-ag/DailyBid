@@ -7,7 +7,8 @@ const initialState: TokensState = {
   selectedSymbol: null,
   selectedQuote: {
     decimals: 6,
-    fee: '',
+    fee: 0,
+    feeNat: '0',
     logo: '',
     name: 'USDT',
     symbol: 'USDT',

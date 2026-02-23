@@ -1,8 +1,9 @@
 import { Principal } from '@dfinity/principal'
+import { useWallet as useWalletPackage } from 'icrc84-package'
 import { useSelector, useDispatch } from 'react-redux'
 
+import { idlFactory as Icrc84IDLFactory } from '../../../declarations/icrc1_auction/icrc1_auction.did'
 import useAuctionQuery from '../../hooks/useAuctionQuery'
-import useWallet from '../../hooks/useWallet'
 import { RootState, AppDispatch } from '../../store'
 import { setBalances } from '../../store/balances'
 import { ClaimTokenBalance, TokenDataItem } from '../../types'
@@ -11,7 +12,13 @@ import { getToken } from '../../utils/tokenUtils'
 export const useHandleAllTrackedDeposits = () => {
   const { userAgent } = useSelector((state: RootState) => state.auth)
   const tokens = useSelector((state: RootState) => state.tokens.tokens)
-  const { getTrackedDeposit, getBalance, balanceNotify } = useWallet()
+  const canisterId = `${process.env.CANISTER_ID_ICRC_AUCTION}`
+
+  const { getTrackedDeposit, getBalance, balanceNotify } = useWalletPackage(
+    userAgent,
+    canisterId,
+    Icrc84IDLFactory,
+  )
   const dispatch = useDispatch<AppDispatch>()
 
   const fetchBalances = async () => {
@@ -26,19 +33,18 @@ export const useHandleAllTrackedDeposits = () => {
   }
 
   const handleNotify = async (principal: string | undefined) => {
-    await balanceNotify(userAgent, principal)
+    await balanceNotify(principal)
   }
 
   const handleAllTrackedDeposits = async (userPrincipal: string) => {
     const balances = await fetchBalances()
 
-    const trackedDeposit = await getTrackedDeposit(userAgent, tokens, '')
+    const trackedDeposit = await getTrackedDeposit(tokens, '')
 
     const tokensBalance: ClaimTokenBalance[] = []
     await Promise.all(
       balances.map(async (token: TokenDataItem) => {
         const balanceOf = await getBalance(
-          userAgent,
           [token],
           `${token.principal}`,
           userPrincipal,

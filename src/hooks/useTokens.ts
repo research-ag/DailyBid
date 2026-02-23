@@ -42,7 +42,7 @@ const useTokens = () => {
 
           return {
             ...token,
-            fee: String(volumeInBase),
+            fee: volumeInBase,
             logo,
             principal: principal.toText(),
           }
@@ -83,7 +83,7 @@ const useTokens = () => {
 
       return {
         ...token,
-        fee: fee.toString(),
+        fee,
         logo,
         principal: quotePrincipal.toText(),
       }

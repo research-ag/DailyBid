@@ -114,6 +114,8 @@ const SymbolSelection: React.FC = () => {
         isClearable={false}
         options={options}
         placeholder={loading ? t('Loading...') : t('Select a symbol')}
+        placeholderSearch={t('Search for a symbol')}
+        moveSelectedToTop={true}
         noOptionsMessage={t('No symbols found')}
         isLoading={loading}
         loadingMessage={t('Loading...')}

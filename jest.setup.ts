@@ -4,3 +4,9 @@ global.ResizeObserver = class {
   unobserve() {}
   disconnect() {}
 }
+
+// Mock scrollTo if it doesn't exist
+if (typeof window !== 'undefined') {
+  window.HTMLElement.prototype.scrollTo =
+    window.HTMLElement.prototype.scrollTo || function () {}
+}

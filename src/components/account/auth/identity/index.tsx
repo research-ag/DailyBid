@@ -19,6 +19,7 @@ import {
   generatePublicKey,
   identityAuthenticate,
 } from '../../../../utils/authUtils'
+import { customPopup, getDeviceType } from '../../../../utils/deviceUtils'
 
 interface IdentityComponentProps {
   onClose: () => void
@@ -54,7 +55,16 @@ const IdentityComponent: React.FC<IdentityComponentProps> = ({
         `${process.env.ENV_LOGIN_II_PROXY_PAGE_LINK}?sessionKey=${publicKey}`,
       )
     } else {
-      await identityAuthenticate(dispatch, 'IC', identityProvider)
+      try {
+        const deviceType = getDeviceType()
+        if (deviceType === 'desktop') {
+          await identityAuthenticate(dispatch, 'IC', identityProvider)
+        } else {
+          await customPopup(() => identityAuthenticate(dispatch, 'IC', identityProvider))
+        }
+      } catch (error) {
+        alert(error)
+      }
     }
     onClose()
   }
