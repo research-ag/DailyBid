@@ -529,13 +529,13 @@ const useAuctionQuery = () => {
         const darkBooks = result.dark_order_books || []
         const allDarkOrders: TokenDataItem[] = []
 
-        for (const [tokenPrincipal, encryptedBook] of darkBooks) {
+        for (const [tokenPrincipal, [encryptedBook]] of darkBooks) {
           try {
             const token = getToken(tokens, tokenPrincipal)
             if (!encryptedBook || encryptedBook.length < 1) continue
 
             const firstCipher = new Uint8Array(
-              encryptedBook[0] as Uint8Array | number[],
+              encryptedBook as Uint8Array | number[],
             )
             const decrypted = await decryptWithVetKD(userAgent, firstCipher)
             if (!decrypted) continue

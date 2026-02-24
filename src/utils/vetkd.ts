@@ -47,27 +47,26 @@ async function getDerivedKeyMaterial(
   if (!CRYPTO_CANISTER_ID) return null
 
   if (!kmCache.has(principalText)) {
-    kmCache.set(
-      principalText,
-      (async () => {
-        const crypto = createCryptoActor(agent)
+    const promise = (async () => {
+      const crypto = createCryptoActor(agent)
 
-        const dpkBytes = new Uint8Array(await crypto.get_ibe_public_key())
-        const dpk = DerivedPublicKey.deserialize(dpkBytes)
+      const dpkBytes = new Uint8Array(await crypto.get_ibe_public_key())
+      const dpk = DerivedPublicKey.deserialize(dpkBytes)
 
-        const tsk = TransportSecretKey.random()
-        const tpk = tsk.publicKeyBytes()
+      const tsk = TransportSecretKey.random()
+      const tpk = tsk.publicKeyBytes()
 
-        const enc = new Uint8Array(
-          await crypto.encrypted_symmetric_key_for_user(tpk),
-        )
-        const encrypted = EncryptedVetKey.deserialize(enc)
-        const input = (principal as any).toUint8Array()
-        const vetKey = encrypted.decryptAndVerify(tsk, dpk, input)
+      const enc = new Uint8Array(
+        await crypto.encrypted_symmetric_key_for_user(tpk),
+      )
+      const encrypted = EncryptedVetKey.deserialize(enc)
+      const input = (principal as any).toUint8Array()
+      const vetKey = encrypted.decryptAndVerify(tsk, dpk, input)
 
-        return await vetKey.asDerivedKeyMaterial()
-      })(),
-    )
+      return await vetKey.asDerivedKeyMaterial()
+    })()
+    kmCache.set(principalText, promise)
+    promise.catch(() => kmCache.delete(principalText))
   }
 
   return kmCache.get(principalText)!
@@ -79,10 +78,7 @@ export async function encryptWithVetKD(
 ): Promise<Uint8Array> {
   const km = await getDerivedKeyMaterial(agent)
   if (!km) {
-    console.warn(
-      "Can't encrypt with VetKD: no derived key material found. Using plaintext instead.",
-    )
-    return plaintext
+    throw new Error('VetKD encryption unavailable: no derived key material.')
   }
   return km.encryptMessage(plaintext, AES_GCM_DOMAIN)
 }
@@ -106,6 +102,9 @@ export async function encryptWithIBE(
   plaintext: Uint8Array,
   nextSessionTimestamp: number,
 ): Promise<Uint8Array> {
+  if (!CRYPTO_CANISTER_ID) {
+    throw new Error('CRYPTO_CANISTER_ID is not configured')
+  }
   const crypto = createCryptoActor(agent)
   const dpkBytes = new Uint8Array(await crypto.get_ibe_public_key())
   const publicKey = DerivedPublicKey.deserialize(dpkBytes)

@@ -6,8 +6,8 @@ import {
 import { ImmediateOrderBookInfo } from '@declarations/icrc1_auction/icrc1_auction.did'
 
 /**
- * Calculates and returns the header information based on the given prices.
- * The header information includes the last auction price, the previous price change in amount and percentage,
+ * Calculates and returns the header information based on the given prices and order book info.
+ * The header information includes the current bid/ask spread, the previous price change in amount and percentage,
  * and the total volume over a specific period.
  *
  * @param prices - An array of DataItem objects containing price and volume information.

@@ -48,9 +48,14 @@ export default function TypeOrderButton({
     }
   }, [active])
 
+  const onChangeRef = useRef(onChange)
   useEffect(() => {
-    onChange(active === 'first' ? firstOption : secondOption)
-  }, [active, firstOption, secondOption, onChange])
+    onChangeRef.current = onChange
+  })
+
+  useEffect(() => {
+    onChangeRef.current(active === 'first' ? firstOption : secondOption)
+  }, [active])
 
   return (
     <Flex position="relative" w="full">
@@ -60,6 +65,12 @@ export default function TypeOrderButton({
             ref={firstButtonRef}
             cursor="pointer"
             onClick={() => setActive('first')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) =>
+              (e.key === 'Enter' || e.key === ' ') && setActive('first')
+            }
+            aria-pressed={active === 'first'}
             pb={2}
           >
             <Text
@@ -75,6 +86,12 @@ export default function TypeOrderButton({
             ref={secondButtonRef}
             cursor="pointer"
             onClick={() => setActive('second')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) =>
+              (e.key === 'Enter' || e.key === ' ') && setActive('second')
+            }
+            aria-pressed={active === 'second'}
             pb={2}
           >
             <Text
