@@ -85,7 +85,7 @@ describe('SolanaComponent', () => {
       <ChakraProvider>
         <SolanaComponent
           onClose={mockOnClose}
-          currentIndex={null}
+          isSelected={false}
           onAccordionChange={mockOnAccordionChange}
           {...props}
         />

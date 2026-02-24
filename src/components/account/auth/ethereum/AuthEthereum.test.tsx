@@ -65,7 +65,7 @@ describe('EthereumComponent', () => {
       <ChakraProvider>
         <EthereumComponent
           onClose={mockOnClose}
-          currentIndex={null}
+          isSelected={false}
           onAccordionChange={mockOnAccordionChange}
           {...props}
         />
@@ -187,12 +187,12 @@ describe('EthereumComponent', () => {
       isInitializing: true,
     })
 
-    // Render with currentIndex set to force accordion open
+    // Render with force accordion open
     render(
       <ChakraProvider>
         <EthereumComponent
           onClose={mockOnClose}
-          currentIndex={2}
+          isSelected={true}
           onAccordionChange={mockOnAccordionChange}
         />
       </ChakraProvider>,
@@ -213,12 +213,12 @@ describe('EthereumComponent', () => {
       isInitializing: false,
     })
 
-    // Render with currentIndex set to force accordion open
+    // Render with force accordion open
     render(
       <ChakraProvider>
         <EthereumComponent
           onClose={mockOnClose}
-          currentIndex={2}
+          isSelected={true}
           onAccordionChange={mockOnAccordionChange}
         />
       </ChakraProvider>,
