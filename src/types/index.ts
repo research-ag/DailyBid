@@ -12,7 +12,7 @@ export interface Option extends OptionBymax {
   periodVolume?: number
 }
 export interface HeaderInformation {
-  lastAuction: number | string
+  currentBidAsk: [number | null, number | null]
   previousChange: {
     amount: number | string
     percentage: number | string
@@ -43,6 +43,8 @@ export interface DataItem {
   volumeInBaseDecimals?: number
   volumeInQuoteDecimals?: number
   priceDigitsLimit?: number
+  source?: 'auction' | 'immediate'
+  timestamp?: number
 }
 export interface TokenMetadata {
   symbol: string
@@ -72,6 +74,7 @@ export interface PricesState {
   nextSession: string | null
   pricesHistory: DataItem[] | []
   pricesInfo: TokenApi[] | []
+  hideIntermediate: boolean
 }
 export interface TokenDataItem extends DataItem, TokenMetadata {
   [key: string]: any

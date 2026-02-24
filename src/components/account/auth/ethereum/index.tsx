@@ -2,18 +2,18 @@ import React, { useState } from 'react'
 
 import {
   Accordion,
-  AccordionItem,
   AccordionButton,
-  AccordionPanel,
   AccordionIcon,
-  useColorModeValue,
+  AccordionItem,
+  AccordionPanel,
   Box,
-  Flex,
   Button,
+  Flex,
   Text,
+  useColorModeValue,
   useToast,
 } from '@chakra-ui/react'
-import { useConnectModal, useAccountModal } from '@rainbow-me/rainbowkit'
+import { useAccountModal, useConnectModal } from '@rainbow-me/rainbowkit'
 import { useSiwe } from 'ic-siwe-js/react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
@@ -23,13 +23,13 @@ import { siweAuthenticate } from '../../../../utils/authUtils'
 
 interface EthereumComponentProps {
   onClose: () => void
-  currentIndex: number | null
-  onAccordionChange: (index: number) => void
+  isSelected?: boolean
+  onAccordionChange: () => void
 }
 
 const EthereumComponent: React.FC<EthereumComponentProps> = ({
   onClose,
-  currentIndex,
+  isSelected,
   onAccordionChange,
 }) => {
   const bgColor = useColorModeValue('grey.200', 'grey.600')
@@ -117,8 +117,8 @@ const EthereumComponent: React.FC<EthereumComponentProps> = ({
   return (
     <Accordion
       allowToggle
-      index={currentIndex === 2 ? [0] : []}
-      onChange={() => onAccordionChange(2)}
+      index={isSelected ? [0] : []}
+      onChange={() => onAccordionChange()}
     >
       <AccordionItem border="none">
         <Box

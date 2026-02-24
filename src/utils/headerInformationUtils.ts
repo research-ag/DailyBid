@@ -1,18 +1,58 @@
 import { DataItem, HeaderInformation } from '../types'
-import { fixDecimal } from '../utils/calculationsUtils'
+import {
+  fixDecimal,
+  convertPriceFromCanister,
+} from '../utils/calculationsUtils'
+import { ImmediateOrderBookInfo } from '@declarations/icrc1_auction/icrc1_auction.did'
 
 /**
- * Calculates and returns the header information based on the given prices.
- * The header information includes the last auction price, the previous price change in amount and percentage,
+ * Calculates and returns the header information based on the given prices and order book info.
+ * The header information includes the current bid/ask spread, the previous price change in amount and percentage,
  * and the total volume over a specific period.
  *
  * @param prices - An array of DataItem objects containing price and volume information.
- * @param nextSession - The next session to be displayed in the header information.
+ * @param orderBookInfo - Immediate order book information.
  * @returns The calculated HeaderInformation object.
  */
-export function calculateHeaderInformation(prices: DataItem[]) {
+export function calculateHeaderInformation(
+  prices: DataItem[],
+  orderBookInfo: ImmediateOrderBookInfo,
+) {
+  const baseDecimals = prices[0]?.baseDecimals
+  const quoteDecimals = prices[0]?.quoteDecimals
+
+  const rawMaxBid = orderBookInfo?.maxBidPrice?.[0] ?? null
+  const rawMinAsk = orderBookInfo?.minAskPrice?.[0] ?? null
+
+  const canConvert =
+    rawMaxBid !== null || rawMinAsk !== null
+      ? typeof baseDecimals === 'number' &&
+        typeof quoteDecimals === 'number' &&
+        baseDecimals >= 0 &&
+        quoteDecimals >= 0 &&
+        (baseDecimals > 0 || quoteDecimals > 0)
+      : false
+
+  const convertedMaxBid =
+    rawMaxBid !== null && canConvert
+      ? convertPriceFromCanister(
+          Number(rawMaxBid),
+          baseDecimals as number,
+          quoteDecimals as number,
+        )
+      : null
+
+  const convertedMinAsk =
+    rawMinAsk !== null && canConvert
+      ? convertPriceFromCanister(
+          Number(rawMinAsk),
+          baseDecimals as number,
+          quoteDecimals as number,
+        )
+      : null
+
   let headerInformation: HeaderInformation = {
-    lastAuction: '',
+    currentBidAsk: [convertedMaxBid, convertedMinAsk],
     previousChange: {
       amount: '',
       percentage: '',
@@ -35,10 +75,12 @@ export function calculateHeaderInformation(prices: DataItem[]) {
       const changeInDollar = lastPrice - previousPrice
 
       const changeInPercentage =
-        ((lastPrice - previousPrice) / previousPrice) * 100
+        previousPrice !== 0
+          ? ((lastPrice - previousPrice) / previousPrice) * 100
+          : 0
 
       headerInformation = {
-        lastAuction: Number(fixDecimal(lastPrice, priceDigitsLimit)),
+        currentBidAsk: headerInformation.currentBidAsk,
         previousChange: {
           amount: Number(fixDecimal(changeInDollar, priceDigitsLimit)),
           percentage: changeInPercentage,
@@ -69,6 +111,7 @@ export function calculateHeaderInformation(prices: DataItem[]) {
 
     return 0
   }
+
   headerInformation = calculatePrices(prices, headerInformation)
   headerInformation.periodVolume = calculateVolume(prices)
 

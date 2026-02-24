@@ -2,34 +2,38 @@ import React from 'react'
 
 import {
   Accordion,
-  AccordionItem,
   AccordionButton,
-  AccordionPanel,
   AccordionIcon,
-  useColorModeValue,
+  AccordionItem,
+  AccordionPanel,
   Box,
-  Flex,
   Button,
+  Flex,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import { useDispatch } from 'react-redux'
 
 import useWindow from '../../../../hooks/useWindow'
 import { AppDispatch } from '../../../../store'
 import {
-  identityAuthenticate,
   generatePublicKey,
+  identityAuthenticate,
 } from '../../../../utils/authUtils'
 import { customPopup, getDeviceType } from '../../../../utils/deviceUtils'
 
 interface IdentityComponentProps {
   onClose: () => void
-  currentIndex: number | null
-  onAccordionChange: (index: number) => void
+  isSelected?: boolean
+  label: string
+  identityProvider?: string
+  onAccordionChange: () => void
 }
 
 const IdentityComponent: React.FC<IdentityComponentProps> = ({
   onClose,
-  currentIndex,
+  isSelected,
+  label,
+  identityProvider,
   onAccordionChange,
 }) => {
   const bgColor = useColorModeValue('grey.200', 'grey.600')
@@ -54,9 +58,9 @@ const IdentityComponent: React.FC<IdentityComponentProps> = ({
       try {
         const deviceType = getDeviceType()
         if (deviceType === 'desktop') {
-          await identityAuthenticate(dispatch, 'IC')
+          await identityAuthenticate(dispatch, 'IC', identityProvider)
         } else {
-          await customPopup(() => identityAuthenticate(dispatch, 'IC'))
+          await customPopup(() => identityAuthenticate(dispatch, 'IC', identityProvider))
         }
       } catch (error) {
         alert(error)
@@ -68,8 +72,8 @@ const IdentityComponent: React.FC<IdentityComponentProps> = ({
   return (
     <Accordion
       allowToggle
-      index={currentIndex === 0 ? [0] : []}
-      onChange={() => onAccordionChange(0)}
+      index={isSelected !== undefined ? (isSelected ? [0] : []) : undefined}
+      onChange={() => onAccordionChange()}
     >
       <AccordionItem border="none">
         <Box
@@ -81,7 +85,7 @@ const IdentityComponent: React.FC<IdentityComponentProps> = ({
           <h2>
             <AccordionButton _expanded={{ bg: bgColor, color: fontColor }}>
               <Box as="span" flex="1" textAlign="left">
-                Internet Identity
+                {label}
               </Box>
               <AccordionIcon />
             </AccordionButton>

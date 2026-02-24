@@ -143,7 +143,7 @@ const HeaderInformation = () => {
   return (
     <Flex direction="row" wrap="wrap" gap={4}>
       <Box
-        mt={3}
+        mt={1}
         ml={4}
         borderRadius="md"
         flex="1"
@@ -151,14 +151,28 @@ const HeaderInformation = () => {
       >
         <Flex direction="column">
           <Stat size="sm">
-            <StatLabel>{t('Last Clearing')}</StatLabel>
+            <StatLabel>{t('Current bid/ask')}</StatLabel>
             <StatNumber>
-              {typeof headerInformation?.lastAuction === 'number'
-                ? `$${headerInformation?.lastAuction.toLocaleString('en-US', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: headerInformation.priceDigitsLimit,
-                  })}`
-                : '--'}
+              {headerInformation?.currentBidAsk[0] === null
+                ? '--'
+                : `$${headerInformation?.currentBidAsk[0].toLocaleString(
+                    'en-US',
+                    {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: headerInformation.priceDigitsLimit,
+                    },
+                  )}`}
+            </StatNumber>
+            <StatNumber>
+              {headerInformation?.currentBidAsk[1] === null
+                ? '--'
+                : `$${headerInformation?.currentBidAsk[1].toLocaleString(
+                    'en-US',
+                    {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: headerInformation.priceDigitsLimit,
+                    },
+                  )}`}
             </StatNumber>
           </Stat>
         </Flex>
@@ -256,7 +270,7 @@ const HeaderInformation = () => {
             onClick={() => fetchStatistics()}
           >
             <Stat size="sm">
-              <StatLabel>{t('Next Clearing')}</StatLabel>
+              <StatLabel>{t('Next Auction')}</StatLabel>
               <StatNumber>{nextSession ? nextSession : '--'}</StatNumber>
             </Stat>
           </MenuButton>
@@ -277,7 +291,7 @@ const HeaderInformation = () => {
         <Flex direction="column">
           <Tooltip label={tooltipText} aria-label="Statistics">
             <Stat size="sm" onMouseEnter={() => fetchStatistics()}>
-              <StatLabel>{t('Next Clearing')}</StatLabel>
+              <StatLabel>{t('Next Auction')}</StatLabel>
               <StatNumber>{nextSession ? nextSession : '--'}</StatNumber>
             </Stat>
           </Tooltip>

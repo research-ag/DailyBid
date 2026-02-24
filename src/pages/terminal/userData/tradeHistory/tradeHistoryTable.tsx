@@ -46,6 +46,14 @@ export default function tableContent(
       },
     },
     {
+      Header: t('Type'),
+      accessor: 'typeOrder',
+      Cell: ({ row }: { row: Row<TokenDataItem> }) => {
+        const { typeOrder } = row.original
+        return <Text textAlign="center">{typeOrder}</Text>
+      },
+    },
+    {
       Header: t('Price'),
       accessor: 'price',
       sortType: (

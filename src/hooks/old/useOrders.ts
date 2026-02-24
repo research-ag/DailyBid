@@ -2,19 +2,20 @@ import { HttpAgent } from '@dfinity/agent'
 import { Principal } from '@dfinity/principal'
 
 import {
-  TokenDataItem,
-  TokenMetadata,
   Option,
   Order,
   SettingsState,
+  TokenDataItem,
+  TokenMetadata,
 } from '../../types'
 import {
+  addDecimal,
   convertPriceFromCanister,
   convertVolumeFromCanister,
-  addDecimal,
 } from '../../utils/calculationsUtils'
 import { getActor } from '../../utils/canisterUtils'
 import { getToken } from '../../utils/tokenUtils'
+import { AUCTION_QUERY_EMPTY_PARAMS } from '../useAuctionQuery.ts'
 
 /**
  * Custom hook for managing orders.
@@ -40,22 +41,34 @@ const useOrders = () => {
 
       const serviceActor = getActor(userAgent)
 
-      const [bidsRaw, asksRaw] = await Promise.all([
-        serviceActor.queryBids(),
-        serviceActor.queryAsks(),
-      ])
+      const { bids, asks, session_numbers } = await serviceActor.auction_query(
+        [],
+        {
+          ...AUCTION_QUERY_EMPTY_PARAMS,
+          asks: [true],
+          bids: [true],
+          session_numbers: [true],
+        },
+      )
+
+      const getSessionNumber = (icrc1Ledger: Principal) => {
+        const res = session_numbers.find(
+          ([t]) => t.toText() == icrc1Ledger.toText(),
+        )
+        return res ? res[1] : undefined
+      }
 
       const openOrdersRaw = [
-        ...bidsRaw.map(([id, bid, sessionNumber]) => ({
+        ...bids.map(([id, bid]) => ({
           ...bid,
           id,
-          sessionNumber,
+          sessionNumber: getSessionNumber(bid.icrc1Ledger),
           type: 'buy',
         })),
-        ...asksRaw.map(([id, ask, sessionNumber]) => ({
+        ...asks.map(([id, ask]) => ({
           ...ask,
           id,
-          sessionNumber,
+          sessionNumber: getSessionNumber(ask.icrc1Ledger),
           type: 'sell',
         })),
       ]
@@ -181,6 +194,7 @@ const useOrders = () => {
           [
             [
               Principal.fromText(principal),
+              { delayed: null },
               BigInt(order.volumeInBase),
               Number(order.price),
             ],
@@ -192,6 +206,7 @@ const useOrders = () => {
           [
             [
               Principal.fromText(principal),
+              { delayed: null },
               BigInt(order.volumeInBase),
               Number(order.price),
             ],

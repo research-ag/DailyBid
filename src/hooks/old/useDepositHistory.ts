@@ -4,6 +4,7 @@ import { TokenMetadata, TokenDataItem } from '../../types'
 import { convertVolumeFromCanister } from '../../utils/calculationsUtils'
 import { getActor } from '../../utils/canisterUtils'
 import { getToken } from '../../utils/tokenUtils'
+import { AUCTION_QUERY_EMPTY_PARAMS } from '../useAuctionQuery.ts'
 
 /**
  * Custom hook for fetching and managing deposit/withdraw history.
@@ -25,11 +26,12 @@ const useDepositHistory = () => {
 
       const serviceActor = getActor(userAgent)
 
-      const histories = await serviceActor.queryDepositHistory(
-        [],
-        BigInt(10000),
-        BigInt(0),
-      )
+      const histories = await serviceActor
+        .auction_query([], {
+          ...AUCTION_QUERY_EMPTY_PARAMS,
+          deposit_history: [[BigInt(10000), BigInt(0)]],
+        })
+        .then((r) => r.deposit_history)
 
       const formattedData = (histories ?? [])
         .reverse()

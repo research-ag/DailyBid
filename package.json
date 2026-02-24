@@ -69,6 +69,7 @@
     "@dfinity/ledger-icp": "^2.6.11",
     "@dfinity/ledger-icrc": "^2.8.1",
     "@dfinity/principal": "^2.4.1",
+    "@dfinity/vetkeys": "^0.4.0",
     "@emotion/react": "^11.11.4",
     "@rainbow-me/rainbowkit": "^2.2.4",
     "@reduxjs/toolkit": "^2.2.5",

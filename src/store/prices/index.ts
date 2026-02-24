@@ -8,6 +8,7 @@ const initialState: PricesState = {
   nextSession: null,
   pricesHistory: [],
   pricesInfo: [],
+  hideIntermediate: false,
 }
 
 const priceHistorySlice = createSlice({
@@ -32,6 +33,9 @@ const priceHistorySlice = createSlice({
     setNextSession: (state, action: PayloadAction<string | null>) => {
       state.nextSession = action.payload
     },
+    setHideIntermediate: (state, action: PayloadAction<boolean>) => {
+      state.hideIntermediate = action.payload
+    },
   },
 })
 
@@ -41,6 +45,7 @@ export const {
   setPricesHistory,
   setPricesInfo,
   setNextSession,
+  setHideIntermediate,
 } = priceHistorySlice.actions
 
 export default priceHistorySlice.reducer

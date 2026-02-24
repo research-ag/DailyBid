@@ -1,33 +1,42 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
+import { CloseIcon } from '@chakra-ui/icons'
 import {
   Box,
+  Flex,
+  IconButton,
+  Image,
+  Text,
+  Tooltip,
+  useColorModeValue,
   useDisclosure,
   useToast,
-  useColorModeValue,
 } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { Row } from 'react-table'
 
 import tableContent from './openOrdersTable'
 import LoginButtonComponent from '../../../../components/loginButton'
 import PaginationTable, {
+  ColumnWithSorting,
   pgSizeDinamic,
 } from '../../../../components/paginationTable'
 import useAuctionQuery from '../../../../hooks/useAuctionQuery'
 import useOpenOrders from '../../../../hooks/useOrders'
-import { RootState, AppDispatch } from '../../../../store'
+import { AppDispatch, RootState } from '../../../../store'
 import { setIsRefreshBalances } from '../../../../store/balances'
 import {
+  setIsRefreshUserData,
   setOpenOrders,
   setOrderDetails,
-  setIsRefreshUserData,
 } from '../../../../store/orders'
 import { setTrades } from '../../../../store/trades'
-import { TokenDataItem, Result } from '../../../../types'
+import { Result, TokenDataItem } from '../../../../types'
 import {
   convertPriceFromCanister,
   convertVolumeFromCanister,
+  getMinimumFractionDigits,
 } from '../../../../utils/calculationsUtils'
 import { analytics } from '../../../../utils/mixpanelUtils'
 import { getErrorMessageCancelOrder } from '../../../../utils/orderUtils'
@@ -48,6 +57,11 @@ const OpenOrders: React.FC = () => {
   const [openOrdersFiltered, setOpenOrdersFiltered] = useState<TokenDataItem[]>(
     [],
   )
+  const [darkOrders, setDarkOrders] = useState<TokenDataItem[]>([])
+  const [darkOrdersFiltered, setDarkOrdersFiltered] = useState<TokenDataItem[]>(
+    [],
+  )
+  const [darkCanceling, setDarkCanceling] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showAllMarkets, setShowAllMarkets] = useState(false)
   const [toggleVolume, setToggleVolume] = useState('base')
@@ -87,17 +101,22 @@ const OpenOrders: React.FC = () => {
       setLoading(true)
 
       const { getQuerys } = useAuctionQuery()
-      const { orders: openOrdersRaw = [], trades: tradesRaw = [] } =
-        await getQuerys(userAgent, {
-          tokens: tokens,
-          selectedQuote: selectedQuote,
-          priceDigitsLimit: orderSettings.orderPriceDigitsLimit,
-          queryTypes: ['open_orders', 'transaction_history'],
-        })
+      const {
+        orders: openOrdersRaw = [],
+        trades: tradesRaw = [],
+        darkOrders: darkOrdersRaw = [],
+      } = await getQuerys(userAgent, {
+        tokens: tokens,
+        selectedQuote: selectedQuote,
+        priceDigitsLimit: orderSettings.orderPriceDigitsLimit,
+        queryTypes: ['open_orders', 'dark_order_books', 'transaction_history'],
+      })
 
       dispatch(setOpenOrders(openOrdersRaw))
       dispatch(setTrades(tradesRaw))
       filterOpenOrders(openOrdersRaw)
+      setDarkOrders(darkOrdersRaw)
+      filterDarkOrders(darkOrdersRaw)
       setLoading(false)
     }
   }
@@ -123,6 +142,13 @@ const OpenOrders: React.FC = () => {
         ),
       )
     }
+  }
+
+  const filterDarkOrders = (orders: TokenDataItem[]) => {
+    const filtered = showAllMarkets
+      ? orders
+      : orders.filter((o) => o.symbol === symbol?.value)
+    setDarkOrdersFiltered(filtered)
   }
 
   const handleCheckboxChange = useCallback((e: boolean) => {
@@ -300,8 +326,228 @@ const OpenOrders: React.FC = () => {
     handleCancelOrderClick,
   )
 
+  const handleCancelDarkBook = useCallback(
+    async (principal: string | undefined) => {
+      if (!principal) return
+      setDarkCanceling(principal)
+      const toastId = toast({
+        title: t('Cancel dark book pending'),
+        description: t('Please wait...'),
+        status: 'loading',
+        duration: null,
+        isClosable: true,
+      })
+      const startTime = Date.now()
+      try {
+        const { deleteDarkOrderBook } = useOpenOrders()
+        const res: any = await deleteDarkOrderBook(userAgent, {
+          principal,
+        } as any)
+        const endTime = Date.now()
+        const durationInSeconds = (endTime - startTime) / 1000
+        if (res && res.Ok !== undefined) {
+          toast.update(toastId, {
+            title: t('Success'),
+            description: getSimpleToastDescription(
+              t('Dark book cancelled'),
+              durationInSeconds,
+            ),
+            status: 'success',
+            isClosable: true,
+          })
+          dispatch(setIsRefreshUserData())
+        } else {
+          toast.update(toastId, {
+            title: t('Cancel dark book rejected'),
+            description: getSimpleToastDescription(
+              res && res.Err ? JSON.stringify(res.Err) : t('Unknown error'),
+              durationInSeconds,
+            ),
+            status: 'error',
+            isClosable: true,
+          })
+        }
+      } catch (e: any) {
+        const endTime = Date.now()
+        const durationInSeconds = (endTime - startTime) / 1000
+        toast({
+          title: t('Cancel dark book rejected'),
+          description: getSimpleToastDescription(
+            `${t('Error')}: ${e?.message || e}`,
+            durationInSeconds,
+          ),
+          status: 'error',
+          isClosable: true,
+        })
+      } finally {
+        setDarkCanceling(null)
+      }
+    },
+    [userAgent, toast, dispatch],
+  )
+
+  const darkTableColumns: ColumnWithSorting<TokenDataItem>[] = [
+    {
+      Header: t('Symbol'),
+      accessor: 'symbol',
+      Cell: ({ row }: { row: Row<TokenDataItem> }) => {
+        const { symbol, base, quote, logo } = row.original
+        return (
+          <Flex justifyContent="left" alignItems="center">
+            <Image src={logo} alt={symbol} h="20px" w="20px" />
+            <Text ml="5px" fontWeight="600">
+              {base}
+            </Text>
+            <Text fontSize="10px">/{quote}</Text>
+          </Flex>
+        )
+      },
+    },
+    {
+      Header: t('Side'),
+      accessor: 'type',
+      Cell: ({ row }: { row: Row<TokenDataItem> }) => {
+        const { type } = row.original
+        return (
+          <Text
+            textAlign="center"
+            color={type === 'buy' ? 'green.500' : 'red.500'}
+          >
+            {type === 'buy' ? t('BUY') : t('SELL')}
+          </Text>
+        )
+      },
+    },
+    {
+      Header: t('Limit'),
+      accessor: 'price',
+      sortType: (
+        rowA: Row<TokenDataItem>,
+        rowB: Row<TokenDataItem>,
+        columnId: string,
+      ) => {
+        const a = rowA.original[columnId] as number
+        const b = rowB.original[columnId] as number
+        return a > b ? 1 : a < b ? -1 : 0
+      },
+      Cell: ({ row }: { row: Row<TokenDataItem> }) => {
+        const { price, priceDigitsLimit } = row.original
+        return (
+          <Text textAlign="center">
+            {price.toLocaleString('en-US', {
+              minimumFractionDigits: getMinimumFractionDigits(
+                String(price),
+                Number(priceDigitsLimit),
+              ),
+              maximumFractionDigits: priceDigitsLimit,
+            })}
+          </Text>
+        )
+      },
+    },
+    {
+      Header: t('Amount'),
+      accessor: 'volume',
+      sortType: (rowA, rowB) => {
+        const valA =
+          toggleVolume === 'quote'
+            ? rowA.original.volumeInQuote
+            : rowA.original.volumeInBase
+        const valB =
+          toggleVolume === 'quote'
+            ? rowB.original.volumeInQuote
+            : rowB.original.volumeInBase
+        return valA - valB
+      },
+      Cell: ({ row }: { row: Row<TokenDataItem> }) => {
+        const {
+          quote,
+          base,
+          volumeInQuote,
+          volumeInBase,
+          quoteDecimals,
+          baseDecimals,
+          volumeInBaseDecimals,
+          volumeInQuoteDecimals,
+        } = row.original
+
+        const volumeBaseAllDecimals = volumeInBase.toLocaleString('en-US', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: baseDecimals,
+        })
+
+        const volumeBase = volumeInBase.toLocaleString('en-US', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: volumeInBaseDecimals,
+        })
+
+        const volumeQuoteAllDecimals = volumeInQuote.toLocaleString('en-US', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: quoteDecimals,
+        })
+
+        const volumeQuoteDecimals = volumeInQuote.toLocaleString('en-US', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: volumeInQuoteDecimals,
+        })
+        return (
+          <Text
+            textAlign="center"
+            onClick={handleToggleVolume}
+            sx={{ cursor: 'pointer' }}
+          >
+            {toggleVolume === 'quote' ? (
+              <Tooltip
+                label={`${volumeQuoteAllDecimals} ${quote}`}
+                aria-label="Quote value"
+              >
+                <Text as="span">
+                  {volumeQuoteDecimals}{' '}
+                  <Text as="span" fontSize="10px">
+                    {quote}
+                  </Text>
+                </Text>
+              </Tooltip>
+            ) : (
+              <Tooltip
+                label={`${volumeBaseAllDecimals} ${base}`}
+                aria-label="Base value"
+              >
+                <Text as="span">
+                  {volumeBase}{' '}
+                  <Text as="span" fontSize="10px">
+                    {base}
+                  </Text>
+                </Text>
+              </Tooltip>
+            )}
+          </Text>
+        )
+      },
+    },
+    {
+      Header: t('Actions'),
+      accessor: 'actions',
+      disableSortBy: true,
+      Cell: ({ row }: { row: Row<TokenDataItem> }) => {
+        const { principal } = row.original as any
+        return (
+          <IconButton
+            aria-label={t('Cancel dark book')}
+            size="xs"
+            variant="ghost"
+            icon={<CloseIcon />}
+            isLoading={darkCanceling === principal}
+            onClick={() => handleCancelDarkBook(principal)}
+          />
+        )
+      },
+    },
+  ]
+
   useEffect(() => {
     filterOpenOrders(openOrders)
+    filterDarkOrders(darkOrders)
     if (showAllMarkets) setToggleVolume('quote')
   }, [showAllMarkets])
 
@@ -334,24 +580,48 @@ const OpenOrders: React.FC = () => {
           height="20vh"
         />
       ) : (
-        <Box>
-          <PaginationTable
-            columns={tableColumns}
-            data={openOrdersFiltered}
-            hiddenColumns={hiddenColumns}
-            searchBy={true}
-            sortBy={sortBy}
-            tableSize="sm"
-            fontSize="11px"
-            bgColor={bgColor}
-            fontColor={fontColor}
-            emptyMessage={t('no order found')}
-            pgSize={isResizeUserData ? 15 : pgSize}
-            onClick={(c) => c}
-            onClickAllMarkets={handleCheckboxChange}
-            onClickRefresh={handleRefreshClick}
-          />
-        </Box>
+        <>
+          <Box>
+            <PaginationTable
+              columns={tableColumns}
+              data={openOrdersFiltered}
+              hiddenColumns={hiddenColumns}
+              searchBy={true}
+              sortBy={sortBy}
+              tableSize="sm"
+              fontSize="11px"
+              bgColor={bgColor}
+              fontColor={fontColor}
+              emptyMessage={t('no order found')}
+              pgSize={isResizeUserData ? 15 : pgSize}
+              onClick={(c) => c}
+              onClickAllMarkets={handleCheckboxChange}
+              onClickRefresh={handleRefreshClick}
+            />
+          </Box>
+          {darkOrders?.length > 0 && (
+            <Box>
+              <Text fontWeight="bold" mb={2}>
+                {t('Dark orders')}
+              </Text>
+              <PaginationTable
+                columns={darkTableColumns}
+                data={darkOrdersFiltered}
+                hiddenColumns={['base', 'quote']}
+                sortBy={[]}
+                tableSize="sm"
+                fontSize="11px"
+                bgColor={bgColor}
+                fontColor={fontColor}
+                emptyMessage={t('no order found')}
+                pgSize={isResizeUserData ? 15 : pgSize}
+                onClick={(c) => c}
+                onClickAllMarkets={handleCheckboxChange}
+                onClickRefresh={handleRefreshClick}
+              />
+            </Box>
+          )}
+        </>
       )}
     </Box>
   )

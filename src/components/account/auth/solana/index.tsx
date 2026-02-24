@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import {
   Accordion,
-  AccordionItem,
   AccordionButton,
-  AccordionPanel,
   AccordionIcon,
-  useColorModeValue,
+  AccordionItem,
+  AccordionPanel,
   Box,
-  Flex,
   Button,
-  Text,
+  Flex,
   Portal,
+  Text,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import { Global } from '@emotion/react'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -28,13 +28,13 @@ import '@solana/wallet-adapter-react-ui/styles.css'
 
 interface SolanaComponentProps {
   onClose: () => void
-  currentIndex: number | null
-  onAccordionChange: (index: number) => void
+  isSelected?: boolean
+  onAccordionChange: () => void
 }
 
 const SolanaComponent: React.FC<SolanaComponentProps> = ({
   onClose,
-  currentIndex,
+  isSelected,
   onAccordionChange,
 }) => {
   const bgColor = useColorModeValue('grey.200', 'grey.600')
@@ -82,8 +82,8 @@ const SolanaComponent: React.FC<SolanaComponentProps> = ({
       <Global styles={walletAdapterChakraGlobal} />
       <Accordion
         allowToggle
-        index={currentIndex === 3 ? [0] : []}
-        onChange={() => onAccordionChange(3)}
+        index={isSelected ? [0] : []}
+        onChange={() => onAccordionChange()}
       >
         <AccordionItem border="none">
           <Box

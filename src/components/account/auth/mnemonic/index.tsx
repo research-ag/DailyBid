@@ -1,19 +1,19 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import {
   Accordion,
-  AccordionItem,
   AccordionButton,
-  AccordionPanel,
   AccordionIcon,
-  useColorModeValue,
+  AccordionItem,
+  AccordionPanel,
   Box,
-  Flex,
-  Text,
   Button,
+  Flex,
   FormControl,
   FormLabel,
   Input,
+  Text,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import * as bip39 from 'bip39'
 import { useDispatch } from 'react-redux'
@@ -21,17 +21,17 @@ import { useDispatch } from 'react-redux'
 import useWindow from '../../../../hooks/useWindow'
 import { AppDispatch } from '../../../../store'
 import { mnemonicAuthenticate } from '../../../../utils/authUtils'
-import { encrypt, decrypt } from '../../../../utils/cryptoUtils'
+import { decrypt, encrypt } from '../../../../utils/cryptoUtils'
 
 interface MnemonicComponentProps {
   onClose: () => void
-  currentIndex: number | null
-  onAccordionChange: (index: number) => void
+  isSelected?: boolean
+  onAccordionChange: () => void
 }
 
 const MnemonicComponent: React.FC<MnemonicComponentProps> = ({
   onClose,
-  currentIndex,
+  isSelected,
   onAccordionChange,
 }) => {
   const bgColor = useColorModeValue('grey.200', 'grey.600')
@@ -112,8 +112,8 @@ const MnemonicComponent: React.FC<MnemonicComponentProps> = ({
   return (
     <Accordion
       allowToggle
-      index={currentIndex === 5 ? [0] : []}
-      onChange={() => onAccordionChange(5)}
+      index={isSelected ? [0] : []}
+      onChange={() => onAccordionChange()}
     >
       <AccordionItem border="none">
         <Box

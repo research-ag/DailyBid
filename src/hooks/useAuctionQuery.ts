@@ -1,15 +1,36 @@
 import { HttpAgent } from '@dfinity/agent'
 import { Principal } from '@dfinity/principal'
 
-import { DataItem, Option, TokenMetadata, TokenDataItem } from '../types'
+import { _SERVICE as AuctionService } from '../../declarations/icrc1_auction/icrc1_auction.did'
+import { DataItem, Option, TokenDataItem, TokenMetadata } from '../types'
 import {
+  addDecimal,
   convertPriceFromCanister,
   convertVolumeFromCanister,
   getDecimals,
-  addDecimal,
 } from '../utils/calculationsUtils'
 import { getActor } from '../utils/canisterUtils'
 import { getToken } from '../utils/tokenUtils'
+import { decryptWithVetKD } from '../utils/vetkd'
+
+export const AUCTION_QUERY_EMPTY_PARAMS: Parameters<
+  AuctionService['auction_query']
+>[1] = {
+  last_prices: [],
+  last_immediate_prices: [],
+  credits: [],
+  asks: [],
+  bids: [],
+  session_numbers: [],
+  transaction_history: [],
+  reversed_history: [true],
+  price_history: [],
+  deposit_history: [],
+  dark_order_books: [],
+  immediate_price_history: [],
+  order_book_info: [],
+  immediate_order_book_info: [],
+}
 
 // Date formatting options
 const DATE_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
@@ -92,6 +113,7 @@ const useAuctionQuery = () => {
     selectedSymbol: Option,
     selectedQuote: TokenMetadata,
     priceDigitsLimit: number,
+    source?: 'auction' | 'immediate',
   ): DataItem[] => {
     return priceData
       .filter((_priceData) => Number(_priceData[4]) !== 0)
@@ -115,7 +137,10 @@ const useAuctionQuery = () => {
           ...values,
           volume: values.volumeInBase,
           quoteDecimals: selectedQuote.decimals,
+          baseDecimals: getDecimals(selectedSymbol),
           priceDigitsLimit,
+          source,
+          timestamp: Number(ts) / 1_000_000,
         }
       })
   }
@@ -144,7 +169,7 @@ const useAuctionQuery = () => {
     ]
 
     return openOrdersRaw.map((order) => {
-      const { id, icrc1Ledger, price, volume, type } = order
+      const { id, icrc1Ledger, price, volume, type, orderBookType } = order
       const token = getToken(tokens, icrc1Ledger)
       const values = processTokenValues(
         Number(price),
@@ -153,11 +178,18 @@ const useAuctionQuery = () => {
         selectedQuote,
       )
 
+      const typeOrder =
+        orderBookType &&
+        Object.prototype.hasOwnProperty.call(orderBookType, 'immediate')
+          ? 'Immediate'
+          : 'Auction'
+
       return {
         id,
         datetime: '',
         ...values,
         type,
+        typeOrder,
         volume: values.volumeInQuote,
         quoteDecimals: selectedQuote.decimals,
         baseDecimals: token.decimals,
@@ -332,6 +364,16 @@ const useAuctionQuery = () => {
     )
   }
 
+  type QueryType =
+    | 'price_history'
+    | 'transaction_history'
+    | 'deposit_history'
+    | 'open_orders'
+    | 'dark_order_books'
+    | 'session_numbers'
+    | 'credits'
+    | 'last_prices'
+    | 'immediate_order_book_info'
   /**
    * Fetches and returns data based on requested query types.
    *
@@ -368,7 +410,7 @@ const useAuctionQuery = () => {
       selectedQuote?: TokenMetadata
       priceDigitsLimit?: number
       tokens?: TokenMetadata[]
-      queryTypes: string[]
+      queryTypes: QueryType[]
     },
   ) => {
     try {
@@ -384,21 +426,12 @@ const useAuctionQuery = () => {
       const serviceActor = getActor(userAgent)
 
       // Prepare query parameters
-      const queryParams: any = {
-        last_prices: [],
-        credits: [],
-        asks: [],
-        bids: [],
-        session_numbers: [],
-        transaction_history: [],
-        reversed_history: [true],
-        price_history: [],
-        deposit_history: [],
-      }
+      const queryParams = { ...AUCTION_QUERY_EMPTY_PARAMS }
 
       // Enable requested query types
       if (queryTypes.includes('price_history')) {
         queryParams.price_history = [[BigInt(10000), BigInt(0), true]]
+        queryParams.immediate_price_history = [[BigInt(10000), BigInt(0)]]
       }
 
       if (queryTypes.includes('transaction_history')) {
@@ -414,6 +447,10 @@ const useAuctionQuery = () => {
         queryParams.asks = [true]
       }
 
+      if (queryTypes.includes('dark_order_books')) {
+        queryParams.dark_order_books = [true]
+      }
+
       if (queryTypes.includes('session_numbers')) {
         queryParams.session_numbers = [true]
       }
@@ -426,6 +463,10 @@ const useAuctionQuery = () => {
         queryParams.last_prices = [true]
       }
 
+      if (queryTypes.includes('immediate_order_book_info')) {
+        queryParams.immediate_order_book_info = [true]
+      }
+
       // Make the canister query
       const principalParam = principal ? [Principal.fromText(principal)] : []
       const result = await serviceActor.auction_query(
@@ -436,20 +477,31 @@ const useAuctionQuery = () => {
       // Process the results based on requested query types
       const response: any = {}
       response.points = result.points
+      response.immediateOrderBookInfo = result.immediate_order_book_info || []
 
-      // Process price history if requested
+      // Process price history (including immediate) if requested
       if (
         queryTypes.includes('price_history') &&
         selectedSymbol &&
         selectedQuote
       ) {
-        const formattedData = processPriceHistory(
+        const auctionData = processPriceHistory(
           result.price_history || [],
           selectedSymbol,
           selectedQuote,
           priceDigitsLimit,
+          'auction',
         )
-        response.pricesHistory = addDecimal(formattedData, 2)
+        const immediateData = processPriceHistory(
+          result.immediate_price_history || [],
+          selectedSymbol,
+          selectedQuote,
+          priceDigitsLimit,
+          'immediate',
+        )
+        const merged = [...auctionData, ...immediateData]
+        merged.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+        response.pricesHistory = addDecimal(merged, 2)
       }
 
       // Process order data (bids and asks) if requested
@@ -467,6 +519,70 @@ const useAuctionQuery = () => {
         )
 
         response.orders = addDecimal(openOrders, 2)
+      }
+
+      if (
+        queryTypes.includes('dark_order_books') &&
+        selectedQuote &&
+        tokens.length > 0
+      ) {
+        const darkBooks = result.dark_order_books || []
+        const allDarkOrders: TokenDataItem[] = []
+
+        for (const [tokenPrincipal, [encryptedBook]] of darkBooks) {
+          try {
+            const token = getToken(tokens, tokenPrincipal)
+            if (!encryptedBook || encryptedBook.length < 1) continue
+
+            const firstCipher = new Uint8Array(
+              encryptedBook as Uint8Array | number[],
+            )
+            const decrypted = await decryptWithVetKD(userAgent, firstCipher)
+            if (!decrypted) continue
+
+            const text = new TextDecoder().decode(decrypted)
+            if (!text) continue
+
+            const entries = text.split(';').filter(Boolean)
+            entries.forEach((entry) => {
+              const [side, volStr, priceStr] = entry.split(':')
+              if (!side || !volStr || !priceStr) return
+
+              const type = side === 'bid' ? 'buy' : 'sell'
+              const priceNat = Number(priceStr)
+              const volumeNat = Number(volStr)
+
+              const formattedPrice = convertPriceFromCanister(
+                priceNat,
+                token.decimals,
+                selectedQuote.decimals,
+              )
+              const { volumeInQuote, volumeInBase } = convertVolumeFromCanister(
+                volumeNat,
+                token.decimals,
+                formattedPrice,
+              )
+
+              allDarkOrders.push({
+                id: BigInt(allDarkOrders.length),
+                datetime: '',
+                price: formattedPrice,
+                type,
+                volume: volumeInQuote,
+                volumeInBase,
+                volumeInQuote,
+                quoteDecimals: selectedQuote.decimals,
+                baseDecimals: token.decimals,
+                priceDigitsLimit,
+                ...token,
+              } as TokenDataItem)
+            })
+          } catch (e) {
+            console.warn('Failed to process dark order book', e)
+          }
+        }
+
+        response.darkOrders = addDecimal(allDarkOrders, 2)
       }
 
       // Process transaction history if requested

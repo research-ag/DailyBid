@@ -15,6 +15,9 @@ import {
   useToast,
   Spinner,
   useColorModeValue,
+  Radio,
+  RadioGroup,
+  Checkbox,
 } from '@chakra-ui/react'
 import { useFormik } from 'formik'
 import { useTranslation } from 'react-i18next'
@@ -35,6 +38,7 @@ import { Result, TokenDataItem } from '../../../types'
 import { Option } from '../../../types'
 import {
   convertExponentialToDecimal,
+  convertVolumeFromCanister,
   formatSignificantDigits,
 } from '../../../utils/calculationsUtils'
 import {
@@ -65,6 +69,8 @@ const Trading = () => {
   const fontColor = useColorModeValue('grey.800', 'grey.200')
 
   const [tradeType, setTradeType] = useState('buy')
+  const [typeOrder, setTypeOrder] = useState('Auction')
+  const [darkOrderBookMode, setDarkOrderBookMode] = useState(false)
   const [amountType, setAmountType] = useState('base')
   const [loading, setLoading] = useState(true)
   const [baseStepSize, setBaseStepSize] = useState<number | null>(null)
@@ -76,6 +82,90 @@ const Trading = () => {
   const [priceValue, setPriceValue] = useState<number | null>(null)
   const [currentSliderValue, setCurrentSliderValue] = useState(0)
   const [message, setMessage] = useState<string | null>(null)
+  const [darkBatch, setDarkBatch] = useState<
+    { volumeInBase: bigint; price: number; type: string }[]
+  >([])
+
+  const addCurrentToDarkBatch = () => {
+    if (!selectedSymbol) return
+    const price = convertPriceToCanister(
+      Number(formik.values.price),
+      Number(symbol?.decimals),
+      selectedQuote.decimals,
+    )
+    const volume = convertVolumetoCanister(
+      Number(formik.values.baseAmount),
+      Number(symbol?.decimals),
+    )
+    if (!price || !volume) return
+    setDarkBatch((prev) => [
+      ...prev,
+      { volumeInBase: BigInt(volume), price, type: tradeType },
+    ])
+    formik.setFieldValue('baseAmount', '')
+    formik.setFieldValue('quoteAmount', '')
+  }
+
+  const clearDarkBatch = () => setDarkBatch([])
+
+  const submitDarkBatch = async () => {
+    if (!selectedSymbol || darkBatch.length === 0) return
+    const title = t('Dark orders pending')
+    const toastId = toast({
+      title,
+      description: t('Please wait...'),
+      status: 'loading',
+      duration: null,
+      isClosable: true,
+    })
+    const startTime = Date.now()
+    try {
+      const { manageDarkOrderBook } = useOrders()
+      const res: any = await manageDarkOrderBook(
+        userAgent,
+        symbol,
+        darkBatch as any,
+      )
+      const endTime = Date.now()
+      const durationInSeconds = (endTime - startTime) / 1000
+      if (res && res.Ok) {
+        toast.update(toastId, {
+          title: t('Success'),
+          description: getSimpleToastDescription(
+            t('Dark order book set successfully'),
+            durationInSeconds,
+          ),
+          status: 'success',
+          isClosable: true,
+        })
+        clearDarkBatch()
+        dispatch(setIsRefreshUserData())
+      } else {
+        toast.update(toastId, {
+          title: t('Failed to set dark order book'),
+          description: getSimpleToastDescription(
+            res && res.Err ? JSON.stringify(res.Err) : t('Unknown error'),
+            durationInSeconds,
+          ),
+          status: 'error',
+          isClosable: true,
+        })
+      }
+    } catch (e: any) {
+      const endTime = Date.now()
+      const durationInSeconds = (endTime - startTime) / 1000
+      toast({
+        title: t('Failed to set dark order book'),
+        description: getSimpleToastDescription(
+          `${t('Error')}: ${e?.message || e}`,
+          durationInSeconds,
+        ),
+        status: 'error',
+        isClosable: true,
+      })
+    }
+  }
+
   const { userAgent } = useSelector((state: RootState) => state.auth)
   const userPrincipal = useSelector(
     (state: RootState) => state.auth.userPrincipal,
@@ -311,7 +401,7 @@ const Trading = () => {
       const { placeOrder, replaceOrder } = useOrders()
 
       if (orderDetails.id === 0n) {
-        placeOrder(userAgent, symbol, order)
+        placeOrder(userAgent, symbol, order, typeOrder)
           .then(async (response: Result) => {
             setStatus({ success: true })
             setSubmitting(false)
@@ -325,11 +415,19 @@ const Trading = () => {
               response.length > 0 &&
               Object.keys(response[0]).includes('Ok')
             ) {
+              const ok = response[0].Ok
+              const status = ok && ok[1]
+              const executed =
+                status &&
+                Object.prototype.hasOwnProperty.call(status, 'executed')
+              const descriptionText = executed
+                ? t('Order executed')
+                : t('Order created')
               if (toastId) {
                 toast.update(toastId, {
                   title: t('Success'),
                   description: getSimpleToastDescription(
-                    t('Order created'),
+                    descriptionText,
                     durationInSeconds,
                   ),
                   status: 'success',
@@ -413,11 +511,19 @@ const Trading = () => {
             const durationInSeconds = (endTime - startTime) / 1000
 
             if (Object.keys(response).includes('Ok')) {
+              const ok = response.Ok
+              const status = ok && ok[1]
+              const executed =
+                status &&
+                Object.prototype.hasOwnProperty.call(status, 'executed')
+              const descriptionText = executed
+                ? t('Order executed')
+                : t('Order replaced')
               if (toastId) {
                 toast.update(toastId, {
                   title: t('Success'),
                   description: getSimpleToastDescription(
-                    t('Order replaced'),
+                    descriptionText,
                     durationInSeconds,
                   ),
                   status: 'success',
@@ -861,12 +967,29 @@ const Trading = () => {
     }
   }, [message])
 
+  useEffect(() => {
+    if (typeOrder === 'Immediate') {
+      setDarkOrderBookMode(false)
+    }
+  }, [typeOrder])
+
   return (
     <VStack spacing={4} align="stretch">
       <TradeTypeSelector
         tradeType={tradeType}
         handleTradeTypeChange={handleTradeTypeChange}
       />
+      <RadioGroup value={typeOrder} onChange={setTypeOrder}>
+        <VStack align="stretch" spacing={2}>
+          <Radio value="Auction">Auction</Radio>
+          <Radio value="Immediate">Immediate</Radio>
+        </VStack>
+      </RadioGroup>
+      {typeOrder === 'Auction' && (
+        <Checkbox onChange={(e) => setDarkOrderBookMode(e.target.checked)}>
+          <Text fontSize="14px">{t('Dark orders')}</Text>
+        </Checkbox>
+      )}
       <Flex direction="column">
         <FormControl variant="floating">
           <Input
@@ -1161,47 +1284,115 @@ const Trading = () => {
               </Text>
             </Text>
           </Box>{' '}
-          <Flex direction="row" justifyContent="space-between" gap={2}>
-            <Button
-              background="grey.500"
-              variant="solid"
-              h="58px"
-              w={formik.isSubmitting ? '100px' : '150px'}
-              color="grey.25"
-              _hover={{
-                bg: 'grey.400',
-                color: 'grey.25',
-              }}
-              isDisabled={!selectedSymbol || formik.isSubmitting}
-              onClick={handleClearForm}
-            >
-              {t('Reset')}
-            </Button>
-            <Button
-              background={tradeType === 'buy' ? 'green.500' : 'red.500'}
-              variant="solid"
-              h="58px"
-              w={formik.isSubmitting ? '200px' : '150px'}
-              color="grey.25"
-              _hover={{
-                bg: tradeType === 'buy' ? 'green.400' : 'red.400',
-                color: 'grey.25',
-              }}
-              isDisabled={!selectedSymbol || formik.isSubmitting}
-              onClick={() => formik.handleSubmit()}
-            >
-              {formik.isSubmitting ? (
-                <>
-                  {orderDetails.id !== 0n ? t('Replacing') : t('Creating')}{' '}
-                  <Spinner ml={2} size="sm" color="grey.25" />
-                </>
-              ) : orderDetails.id !== 0n ? (
-                t('Replace')
-              ) : (
-                t('Create')
-              )}
-            </Button>
-          </Flex>
+          {darkOrderBookMode && (
+            <Box mt={3}>
+              <Text textAlign="center" fontSize="12px">
+                {t('Orders in dark batch')}: {darkBatch.length}
+              </Text>
+              <VStack mt={2} spacing={2}>
+                {darkBatch.map((order, idx) => (
+                  <Text key={idx} textAlign="left" fontSize="10px">
+                    {t(order.type.toUpperCase())}
+                    &nbsp;
+                    {convertVolumeFromCanister(
+                      Number(order.volumeInBase),
+                      Number(symbol?.decimals),
+                      order.price,
+                    ).volumeInBase.toString()}
+                    &nbsp;{t('Price')}: {order.price}
+                  </Text>
+                ))}
+              </VStack>
+              <VStack mt={2} spacing={2} align="stretch">
+                <Button
+                  background="grey.500"
+                  variant="solid"
+                  h="48px"
+                  w="100%"
+                  color="grey.25"
+                  _hover={{ bg: 'grey.400', color: 'grey.25' }}
+                  isDisabled={
+                    !selectedSymbol ||
+                    !formik.values.price ||
+                    !formik.values.baseAmount
+                  }
+                  onClick={addCurrentToDarkBatch}
+                >
+                  {t('Add to Dark Batch')}
+                </Button>
+                <Button
+                  background={tradeType === 'buy' ? 'green.500' : 'red.500'}
+                  variant="solid"
+                  h="48px"
+                  w="100%"
+                  color="grey.25"
+                  _hover={{
+                    bg: tradeType === 'buy' ? 'green.400' : 'red.400',
+                    color: 'grey.25',
+                  }}
+                  isDisabled={!selectedSymbol || darkBatch.length === 0}
+                  onClick={submitDarkBatch}
+                >
+                  {t('Submit Dark Orders')}
+                </Button>
+                <Button
+                  background="grey.500"
+                  variant="solid"
+                  h="48px"
+                  w="100%"
+                  color="grey.25"
+                  _hover={{ bg: 'grey.400', color: 'grey.25' }}
+                  isDisabled={darkBatch.length === 0}
+                  onClick={clearDarkBatch}
+                >
+                  {t('Clear Dark Batch')}
+                </Button>
+              </VStack>
+            </Box>
+          )}
+          {!darkOrderBookMode && (
+            <Flex direction="row" justifyContent="space-between" gap={2}>
+              <Button
+                background="grey.500"
+                variant="solid"
+                h="58px"
+                w={formik.isSubmitting ? '100px' : '150px'}
+                color="grey.25"
+                _hover={{
+                  bg: 'grey.400',
+                  color: 'grey.25',
+                }}
+                isDisabled={!selectedSymbol || formik.isSubmitting}
+                onClick={handleClearForm}
+              >
+                {t('Reset')}
+              </Button>
+              <Button
+                background={tradeType === 'buy' ? 'green.500' : 'red.500'}
+                variant="solid"
+                h="58px"
+                w={formik.isSubmitting ? '200px' : '150px'}
+                color="grey.25"
+                _hover={{
+                  bg: tradeType === 'buy' ? 'green.400' : 'red.400',
+                  color: 'grey.25',
+                }}
+                isDisabled={!selectedSymbol || formik.isSubmitting}
+                onClick={() => formik.handleSubmit()}
+              >
+                {formik.isSubmitting ? (
+                  <>
+                    {orderDetails.id !== 0n ? t('Replacing') : t('Creating')}{' '}
+                    <Spinner ml={2} size="sm" color="grey.25" />
+                  </>
+                ) : orderDetails.id !== 0n ? (
+                  t('Replace')
+                ) : (
+                  t('Create')
+                )}
+              </Button>
+            </Flex>
+          )}
         </>
       )}
       {message && (

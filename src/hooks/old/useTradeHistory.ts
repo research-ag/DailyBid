@@ -9,6 +9,7 @@ import {
 } from '../../utils/calculationsUtils'
 import { getActor } from '../../utils/canisterUtils'
 import { getToken } from '../../utils/tokenUtils'
+import { AUCTION_QUERY_EMPTY_PARAMS } from '../useAuctionQuery.ts'
 
 /**
  * Custom hook for fetching and managing transaction history.
@@ -33,11 +34,12 @@ const useTransactionHistory = () => {
       if (!tokens || tokens.length === 0) return []
 
       const serviceActor = getActor(userAgent)
-      const transactions = await serviceActor.queryTransactionHistory(
-        [],
-        BigInt(10000),
-        BigInt(0),
-      )
+      const transactions = await serviceActor
+        .auction_query([], {
+          ...AUCTION_QUERY_EMPTY_PARAMS,
+          transaction_history: [[BigInt(10000), BigInt(0)]],
+        })
+        .then((r) => r.transaction_history)
       const formattedData: TokenDataItem[] = (transactions ?? []).map(
         (
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
