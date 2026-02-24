@@ -138,14 +138,14 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
                       <SolanaComponent
                         onClose={onClose}
                         isSelected={activeIndex === 4}
-                        onAccordionChange={() => handleAccordionChange(3)}
+                        onAccordionChange={() => handleAccordionChange(4)}
                       />
                     </Box>
                     <Box mt={4}>
                       <SeedComponent
                         onClose={onClose}
                         isSelected={activeIndex === 5}
-                        onAccordionChange={() => handleAccordionChange(4)}
+                        onAccordionChange={() => handleAccordionChange(5)}
                       />
                     </Box>
                   </>
@@ -154,7 +154,7 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
                   <MnemonicComponent
                     onClose={onClose}
                     isSelected={activeIndex === 6}
-                    onAccordionChange={() => handleAccordionChange(5)}
+                    onAccordionChange={() => handleAccordionChange(6)}
                   />
                 </Box>
                 {isTelegram && !isTelegramWeb && (
