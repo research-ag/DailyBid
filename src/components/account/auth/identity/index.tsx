@@ -72,7 +72,7 @@ const IdentityComponent: React.FC<IdentityComponentProps> = ({
   return (
     <Accordion
       allowToggle
-      index={isSelected ? [0] : []}
+      index={isSelected !== undefined ? (isSelected ? [0] : []) : undefined}
       onChange={() => onAccordionChange()}
     >
       <AccordionItem border="none">

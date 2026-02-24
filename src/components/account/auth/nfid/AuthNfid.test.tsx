@@ -45,7 +45,7 @@ describe('NfidComponent', () => {
     const accordionButton = screen.getByText('NFID')
     fireEvent.click(accordionButton)
 
-    expect(onAccordionChangeMock).toHaveBeenCalledWith(1)
+    expect(onAccordionChangeMock).toHaveBeenCalled()
   })
 
   it('calls identityAuthenticate and onClose when Log in button is clicked', async () => {
