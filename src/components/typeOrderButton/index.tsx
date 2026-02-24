@@ -18,7 +18,11 @@ export default function TypeOrderButton({
   initialActive = 'first',
 }: TypeOrderButtonProps) {
   const [active, setActive] = useState<'first' | 'second'>(initialActive)
-  const [lineStyle, setLineStyle] = useState({ left: '0px', width: '0px' })
+  const [lineStyle, setLineStyle] = useState<{
+    left: string
+    width: string
+    transition?: string
+  } | null>(null)
   const firstButtonRef = useRef<HTMLDivElement>(null)
   const secondButtonRef = useRef<HTMLDivElement>(null)
   const fontActiveColor = useColorModeValue('grey.700', 'grey.100')
@@ -123,7 +127,7 @@ export default function TypeOrderButton({
         h="2px"
         bg={borderActiveColor}
         transition="left 0.3s ease-in-out, width 0.3s ease-in-out"
-        style={lineStyle}
+        style={lineStyle ?? {}}
         zIndex={1}
       />
     </Flex>
