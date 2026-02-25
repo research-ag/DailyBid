@@ -72,7 +72,7 @@ const SolanaComponent: React.FC<SolanaComponentProps> = ({
 
   useEffect(() => {
     if (identity) {
-      siwsAuthenticate(dispatch, identity)
+      siwsAuthenticate(dispatch, identity as any)
       onClose()
     }
   }, [identity])

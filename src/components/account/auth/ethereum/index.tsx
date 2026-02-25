@@ -90,7 +90,7 @@ const EthereumComponent: React.FC<EthereumComponentProps> = ({
       // Wrap the login function in a try-catch to get more specific error information
       try {
         // This calls the correct function from authUtils that matches the original project
-        await siweAuthenticate(dispatch, login)
+        await siweAuthenticate(dispatch, login as any)
 
         onClose()
       } catch (loginError) {
