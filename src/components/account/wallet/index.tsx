@@ -18,8 +18,8 @@ import {
   Image,
   useClipboard,
 } from '@chakra-ui/react'
-import { Principal } from '@dfinity/principal'
-import { useWallet as useWalletPackage } from 'icrc84-package'
+import { Principal } from '@icp-sdk/core/principal'
+import { useWallet as useWalletPackage } from '@research-ag/icrc-84'
 import { useTranslation } from 'react-i18next'
 import { FaBitcoin } from 'react-icons/fa'
 import { useSelector, useDispatch } from 'react-redux'

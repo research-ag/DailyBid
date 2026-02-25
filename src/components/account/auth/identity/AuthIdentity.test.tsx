@@ -9,7 +9,10 @@ import IdentityComponent from './'
 jest.mock('../../../../hooks/useWindow', () => ({
   __esModule: true,
   default: jest.fn(() => ({
-    getIsTelegramApp: jest.fn(() => ({ isTelegram: false, isTelegramWeb: false })),
+    getIsTelegramApp: jest.fn(() => ({
+      isTelegram: false,
+      isTelegramWeb: false,
+    })),
   })),
 }))
 

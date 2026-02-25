@@ -1,8 +1,11 @@
 import { Buffer } from 'buffer'
 
-import { AccountIdentifier, SubAccount } from '@dfinity/ledger-icp'
-import { encodeIcrcAccount, decodeIcrcAccount } from '@dfinity/ledger-icrc'
-import { Principal } from '@dfinity/principal'
+import { AccountIdentifier, SubAccount } from '@icp-sdk/canisters/ledger/icp'
+import {
+  encodeIcrcAccount,
+  decodeIcrcAccount,
+} from '@icp-sdk/canisters/ledger/icrc'
+import { Principal } from '@icp-sdk/core/principal'
 import bigInt from 'big-integer'
 
 import { getAuctionCanisterId } from './canisterUtils'

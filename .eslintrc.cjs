@@ -80,7 +80,6 @@ module.exports = {
         endOfLine: 'auto',
       },
     ],
-    'no-console': 'warn',
     'import/order': [
       'error',
       {

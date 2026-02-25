@@ -1,12 +1,12 @@
-import { HttpAgent, Identity } from '@dfinity/agent'
-import { AuthClient } from '@dfinity/auth-client'
+import { AuthClient } from '@icp-sdk/auth/client'
+import { HttpAgent, Identity } from '@icp-sdk/core/agent'
 import {
   DelegationChain,
   DelegationIdentity,
   Ed25519KeyIdentity,
   isDelegationValid,
-} from '@dfinity/identity'
-import { Secp256k1KeyIdentity } from '@dfinity/identity-secp256k1'
+} from '@icp-sdk/core/identity'
+import { Secp256k1KeyIdentity } from '@icp-sdk/core/identity/secp256k1'
 
 import {
   getAccountIdentifier,

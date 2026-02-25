@@ -16,8 +16,8 @@ import { useSelector, useDispatch } from 'react-redux'
 
 import HistoryRow from './historyRow'
 import { RootState } from '../../../../store'
-import { DataItem } from '../../../../types'
 import { setHideIntermediate } from '../../../../store/prices'
+import { DataItem } from '../../../../types'
 
 const PriceHistory: React.FC = () => {
   const [prices, setPrices] = useState<DataItem[]>([])

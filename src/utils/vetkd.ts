@@ -1,5 +1,3 @@
-import { Actor, HttpAgent } from '@dfinity/agent'
-import { IDL } from '@dfinity/candid'
 import {
   DerivedKeyMaterial,
   DerivedPublicKey,
@@ -9,6 +7,8 @@ import {
   IbeIdentity,
   IbeSeed,
 } from '@dfinity/vetkeys'
+import { Actor, HttpAgent } from '@icp-sdk/core/agent'
+import { IDL } from '@icp-sdk/core/candid'
 
 const AES_GCM_DOMAIN = 'icrc1-auction-aes-gcm'
 

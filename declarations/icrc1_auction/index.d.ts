@@ -3,9 +3,9 @@ import type {
   ActorSubclass,
   Agent,
   HttpAgentOptions,
-} from '@dfinity/agent'
-import type { Principal } from '@dfinity/principal'
-import type { IDL } from '@dfinity/candid'
+} from '@icp-sdk/core/agent'
+import type { IDL } from '@icp-sdk/core/candid'
+import type { Principal } from '@icp-sdk/core/principal'
 
 import { _SERVICE } from './icrc1_auction.did'
 

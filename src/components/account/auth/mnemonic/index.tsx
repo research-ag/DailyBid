@@ -161,7 +161,7 @@ const MnemonicComponent: React.FC<MnemonicComponentProps> = ({
                     color: fontColor,
                   }}
                   onClick={() => {
-                    setSeedLocalStorage(''), setSeed('')
+                    ;(setSeedLocalStorage(''), setSeed(''))
                   }}
                 >
                   Enter new Mnemonic

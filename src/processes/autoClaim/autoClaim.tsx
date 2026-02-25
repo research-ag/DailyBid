@@ -1,5 +1,5 @@
-import { Principal } from '@dfinity/principal'
-import { useWallet as useWalletPackage } from 'icrc84-package'
+import { Principal } from '@icp-sdk/core/principal'
+import { useWallet as useWalletPackage } from '@research-ag/icrc-84'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { idlFactory as Icrc84IDLFactory } from '../../../declarations/icrc1_auction/icrc1_auction.did'

@@ -27,10 +27,10 @@ import {
   useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
-import { HttpAgent } from '@dfinity/agent'
+import { HttpAgent } from '@icp-sdk/core/agent'
+import { useWallet as useWalletPackage } from '@research-ag/icrc-84'
 import { Select } from 'bymax-react-select'
 import { useFormik } from 'formik'
-import { useWallet as useWalletPackage } from 'icrc84-package'
 import { useTranslation } from 'react-i18next'
 import { LuDownload, LuUpload } from 'react-icons/lu'
 import { RiHandCoinLine } from 'react-icons/ri'

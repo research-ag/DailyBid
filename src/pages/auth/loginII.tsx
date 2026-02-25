@@ -14,14 +14,14 @@ import {
   useColorMode,
   useToast,
 } from '@chakra-ui/react'
-import { DerEncodedPublicKey } from '@dfinity/agent'
-import { AuthClient } from '@dfinity/auth-client'
+import { AuthClient } from '@icp-sdk/auth/client'
+import { DerEncodedPublicKey } from '@icp-sdk/core/agent'
 import {
   DelegationIdentity,
   Ed25519PublicKey,
   ECDSAKeyIdentity,
   DelegationChain,
-} from '@dfinity/identity'
+} from '@icp-sdk/core/identity'
 import { Select } from 'bymax-react-select'
 import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'

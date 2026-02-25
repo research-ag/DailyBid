@@ -1,4 +1,4 @@
-import { HttpAgent } from '@dfinity/agent'
+import { HttpAgent } from '@icp-sdk/core/agent'
 
 import { TokenApi } from '../types'
 import { getActorMetalPriceApi } from '../utils/canisterMetalPriceApiUtils'

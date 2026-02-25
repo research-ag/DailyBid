@@ -1,8 +1,12 @@
-import { HttpAgent } from '@dfinity/agent'
-import { IcrcLedgerCanister, decodeIcrcAccount } from '@dfinity/ledger-icrc'
-import { Principal } from '@dfinity/principal'
+import {
+  IcrcLedgerCanister,
+  decodeIcrcAccount,
+} from '@icp-sdk/canisters/ledger/icrc'
+import { HttpAgent } from '@icp-sdk/core/agent'
+import { Principal } from '@icp-sdk/core/principal'
 
 import { TokenMetadata, Result } from '../types'
+import { AUCTION_QUERY_EMPTY_PARAMS } from './useAuctionQuery.ts'
 import {
   convertVolumeFromCanister,
   getDecimals,
@@ -14,7 +18,6 @@ import {
   getSubAccountFromPrincipal,
 } from '../utils/convertionsUtils'
 import { getToken } from '../utils/tokenUtils'
-import { AUCTION_QUERY_EMPTY_PARAMS } from './useAuctionQuery.ts'
 
 /**
  * Custom hook for fetching and managing user wallet.

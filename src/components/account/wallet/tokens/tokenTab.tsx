@@ -8,7 +8,7 @@ import {
   InputLeftElement,
   Progress,
 } from '@chakra-ui/react'
-import { HttpAgent } from '@dfinity/agent'
+import { HttpAgent } from '@icp-sdk/core/agent'
 
 import TokenRow from './tokenRow'
 import { TokenDataItem, TokenMetadata } from '../../../../types'
