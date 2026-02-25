@@ -1,11 +1,11 @@
-import type { IDL } from '@icp-sdk/core/candid'
-import type { Principal } from '@icp-sdk/core/principal'
 import type {
   ActorConfig,
   ActorSubclass,
   Agent,
   HttpAgentOptions,
-} from '@icp-sdk.core/agent'
+} from '@icp-sdk/core/agent'
+import type { IDL } from '@icp-sdk/core/candid'
+import type { Principal } from '@icp-sdk/core/principal'
 
 import { _SERVICE } from './ic_siwe_provider.did'
 

@@ -1,21 +1,24 @@
 import type { ActorMethod } from '@icp-sdk/core/agent'
 import type { IDL } from '@icp-sdk/core/candid'
-import type { Principal } from '@icp-sdk/core/principal'
 
 export type Address = string
 export type CanisterPublicKey = PublicKey
+
 export interface Delegation {
   pubkey: PublicKey
   targets: [] | [Array<Principal>]
   expiration: Timestamp
 }
+
 export type GetAddressResponse = { Ok: Address } | { Err: string }
 export type GetDelegationResponse = { Ok: SignedDelegation } | { Err: string }
 export type GetPrincipalResponse = { Ok: Principal } | { Err: string }
+
 export interface LoginDetails {
   user_canister_pubkey: CanisterPublicKey
   expiration: Timestamp
 }
+
 export type LoginResponse = { Ok: LoginDetails } | { Err: string }
 export type Nonce = string
 export type PrepareLoginResponse = { Ok: SiwsMessage } | { Err: string }
@@ -26,6 +29,7 @@ export type RuntimeFeature =
   | { DisablePrincipalToSolMapping: null }
   | { DisableSolToPrincipalMapping: null }
 export type SessionKey = PublicKey
+
 export interface SettingsInput {
   uri: string
   runtime_features: [] | [Array<RuntimeFeature>]
@@ -38,10 +42,12 @@ export interface SettingsInput {
   chain_id: [] | [string]
   sign_in_expires_in: [] | [bigint]
 }
+
 export interface SignedDelegation {
   signature: Uint8Array | number[]
   delegation: Delegation
 }
+
 export interface SiwsMessage {
   uri: string
   issued_at: bigint
@@ -53,8 +59,10 @@ export interface SiwsMessage {
   nonce: string
   expiration_time: bigint
 }
+
 export type SiwsSignature = string
 export type Timestamp = bigint
+
 export interface _SERVICE {
   get_address: ActorMethod<[Principal], GetAddressResponse>
   get_caller_address: ActorMethod<[], GetAddressResponse>
@@ -69,5 +77,6 @@ export interface _SERVICE {
   >
   siws_prepare_login: ActorMethod<[Address], PrepareLoginResponse>
 }
+
 export declare const idlFactory: IDL.InterfaceFactory
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[]

@@ -61,6 +61,7 @@
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.2",
     "@chakra-ui/theme-tools": "^2.1.2",
+    "@dfinity/utils": "^4.1.0",
     "@dfinity/vetkeys": "^0.4.0",
     "@emotion/react": "^11.11.4",
     "@icp-sdk/auth": "^5.0.0",

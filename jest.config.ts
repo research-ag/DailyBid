@@ -24,9 +24,12 @@ const config: JestConfigWithTsJest = {
       prefix: '<rootDir>',
     }),
     // Force CommonJS builds for ESM-only packages so Jest can load them without transforming ESM
-    '^@icp-sdk/core/principal$': '<rootDir>/node_modules/@icp-sdk/core/lib/cjs/principal/index.js',
-    '^@icp-sdk/canisters/ledger/icp$': '<rootDir>/node_modules/@icp-sdk/canisters/ledger/icp/index.js',
-    '^@icp-sdk/canisters/ledger/icrc$': '<rootDir>/node_modules/@icp-sdk/canisters/ledger/icrc/index.js',
+    '^@icp-sdk/core/principal$':
+      '<rootDir>/node_modules/@icp-sdk/core/lib/cjs/principal/index.js',
+    '^@icp-sdk/canisters/ledger/icp$':
+      '<rootDir>/node_modules/@icp-sdk/canisters/ledger/icp/index.js',
+    '^@icp-sdk/canisters/ledger/icrc$':
+      '<rootDir>/node_modules/@icp-sdk/canisters/ledger/icrc/index.js',
     '^@dfinity/utils$': '<rootDir>/node_modules/@dfinity/utils/dist/index.js',
     '^.+\\.png$': '<rootDir>/__mocks__/fileMock.ts',
     '^bymax-react-select$': '<rootDir>/__mocks__/bymaxReactSelectMock.tsx',

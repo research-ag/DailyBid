@@ -14,6 +14,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react'
 import { Global } from '@emotion/react'
+import { Identity } from '@icp-sdk/core/agent'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { useSiws } from 'ic-siws-js/react'
@@ -72,7 +73,7 @@ const SolanaComponent: React.FC<SolanaComponentProps> = ({
 
   useEffect(() => {
     if (identity) {
-      siwsAuthenticate(dispatch, identity as any)
+      siwsAuthenticate(dispatch, identity as unknown as Identity)
       onClose()
     }
   }, [identity])
