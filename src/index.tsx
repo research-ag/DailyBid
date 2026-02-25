@@ -72,13 +72,13 @@ function RainbowKitThemeWrapper() {
             })
       }
     >
-      (canisterId ? (
-      <SiweIdentityProvider canisterId={canisterId!}>
-        <App />
-      </SiweIdentityProvider>
+      {canisterId ? (
+        <SiweIdentityProvider canisterId={canisterId!}>
+          <App />
+        </SiweIdentityProvider>
       ) : (
-      <App />
-      ))
+        <App />
+      )}
     </RainbowKitProvider>
   )
 }

@@ -91,12 +91,10 @@ const EthereumComponent: React.FC<EthereumComponentProps> = ({
       // Wrap the login function in a try-catch to get more specific error information
       try {
         // This calls the correct function from authUtils that matches the original project
-        const siweLogin: () => Promise<
-          DelegationIdentity | undefined
-        > = async () => {
-          return login?.() as Promise<DelegationIdentity | undefined>
-        }
-        await siweAuthenticate(dispatch, siweLogin)
+        await siweAuthenticate(
+          dispatch,
+          login as () => Promise<DelegationIdentity | undefined>,
+        )
 
         onClose()
       } catch (loginError) {

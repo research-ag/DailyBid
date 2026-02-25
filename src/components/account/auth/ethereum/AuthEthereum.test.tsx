@@ -1,6 +1,6 @@
 import { ChakraProvider } from '@chakra-ui/react'
-import { useConnectModal, useAccountModal } from '@rainbow-me/rainbowkit'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { useAccountModal, useConnectModal } from '@rainbow-me/rainbowkit'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useSiwe } from 'ic-siwe-js/react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
@@ -130,7 +130,7 @@ describe('EthereumComponent', () => {
     fireEvent.click(screen.getByText('Sign In With Ethereum'))
 
     await waitFor(() => {
-      expect(siweAuthenticate).toHaveBeenCalled()
+      expect(siweAuthenticate).toHaveBeenCalledWith(mockDispatch, mockLogin)
     })
   })
 
