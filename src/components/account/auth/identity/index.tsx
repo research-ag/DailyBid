@@ -60,7 +60,9 @@ const IdentityComponent: React.FC<IdentityComponentProps> = ({
         if (deviceType === 'desktop') {
           await identityAuthenticate(dispatch, 'IC', identityProvider)
         } else {
-          await customPopup(() => identityAuthenticate(dispatch, 'IC', identityProvider))
+          await customPopup(() =>
+            identityAuthenticate(dispatch, 'IC', identityProvider),
+          )
         }
       } catch (error) {
         alert(error)

@@ -3,7 +3,7 @@ import {
   ActorSubclass,
   HttpAgent,
   AnonymousIdentity,
-} from '@dfinity/agent'
+} from '@icp-sdk/core/agent'
 
 import { checkUserAgentDelegation } from './authUtils'
 import { getAgent } from './authUtils'

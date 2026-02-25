@@ -1,6 +1,6 @@
-import type { Principal } from '@dfinity/principal'
-import type { ActorMethod } from '@dfinity/agent'
-import type { IDL } from '@dfinity/candid'
+import type { ActorMethod } from '@icp-sdk/core/agent'
+import type { IDL } from '@icp-sdk/core/candid'
+import type { Principal } from '@icp-sdk/core/principal'
 
 export interface Account {
   owner: Principal
@@ -35,7 +35,7 @@ export type DepositResponse =
   | {
       Err:
         | { TransferError: { message: string } }
-        | { AmountBelowMinimum: {} }
+        | { AmountBelowMinimum: Record<string, never> }
         | { CallLedgerError: { message: string } }
         | { BadFee: { expected_fee: bigint } }
     }
@@ -190,8 +190,8 @@ export type WithdrawResponse =
     }
   | {
       Err:
-        | { AmountBelowMinimum: {} }
-        | { InsufficientCredit: {} }
+        | { AmountBelowMinimum: Record<string, never> }
+        | { InsufficientCredit: Record<string, never> }
         | { CallLedgerError: { message: string } }
         | { BadFee: { expected_fee: bigint } }
     }
@@ -311,7 +311,7 @@ export interface _SERVICE {
           | { InsufficientAllowance: { allowance: bigint } }
           | { AlreadyProcessing: null }
           | { Duplicate: { duplicate_of: bigint } }
-          | { InsufficientCredit: {} }
+          | { InsufficientCredit: Record<string, never> }
           | { BadFee: { expected_fee: bigint } }
           | { AmountTooLow: bigint }
           | { AllowanceChanged: { current_allowance: bigint } }
@@ -398,11 +398,11 @@ export interface _SERVICE {
             }
           | { TemporarilyUnavailable: null }
           | { Duplicate: { duplicate_of: bigint } }
-          | { InsufficientCredit: {} }
+          | { InsufficientCredit: Record<string, never> }
           | { BadFee: { expected_fee: bigint } }
           | { InvalidReceiver: { receiver: Principal } }
           | { CreatedInFuture: { ledger_time: bigint } }
-          | { TooLowAmount: {} }
+          | { TooLowAmount: Record<string, never> }
           | { TooOld: null }
           | { InsufficientFunds: { balance: bigint } }
       }

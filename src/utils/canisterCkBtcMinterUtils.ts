@@ -1,4 +1,4 @@
-import { Actor, ActorSubclass, HttpAgent } from '@dfinity/agent'
+import { Actor, ActorSubclass, HttpAgent } from '@icp-sdk/core/agent'
 
 import { _SERVICE as Icrc84Actor } from '../../declarations/ckBtcMinter/ckBtcMinter.did'
 import { idlFactory as Icrc84IDLFactory } from '../../declarations/ckBtcMinter/ckBtcMinter.did'

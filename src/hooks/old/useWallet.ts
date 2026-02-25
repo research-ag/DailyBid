@@ -1,6 +1,9 @@
-import { HttpAgent } from '@dfinity/agent'
-import { IcrcLedgerCanister, decodeIcrcAccount } from '@dfinity/ledger-icrc'
-import { Principal } from '@dfinity/principal'
+import {
+  IcrcLedgerCanister,
+  decodeIcrcAccount,
+} from '@icp-sdk/canisters/ledger/icrc'
+import { HttpAgent } from '@icp-sdk/core/agent'
+import { Principal } from '@icp-sdk/core/principal'
 
 import { TokenDataItem, TokenMetadata, Result } from '../../types'
 import {

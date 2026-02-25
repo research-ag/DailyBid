@@ -1041,8 +1041,8 @@ const Trading = () => {
             tooltipTextColor="white"
             fontSize="12px"
             onChangeValue={(value) => {
-              handlePricePercentageCalculate(value),
-                setCurrentSliderValue(value)
+              ;(handlePricePercentageCalculate(value),
+                setCurrentSliderValue(value))
             }}
           />
         </Box>

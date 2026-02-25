@@ -1,9 +1,10 @@
+import { ImmediateOrderBookInfo } from '@declarations/icrc1_auction/icrc1_auction.did'
+
 import { DataItem, HeaderInformation } from '../types'
 import {
   fixDecimal,
   convertPriceFromCanister,
 } from '../utils/calculationsUtils'
-import { ImmediateOrderBookInfo } from '@declarations/icrc1_auction/icrc1_auction.did'
 
 /**
  * Calculates and returns the header information based on the given prices and order book info.

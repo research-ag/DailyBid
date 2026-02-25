@@ -1,4 +1,4 @@
-import { HttpAgent } from '@dfinity/agent'
+import { HttpAgent } from '@icp-sdk/core/agent'
 
 import { TokenMetadata, TokenDataItem } from '../../types'
 import { convertVolumeFromCanister } from '../../utils/calculationsUtils'

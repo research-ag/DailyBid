@@ -1,4 +1,4 @@
-import { HttpAgent } from '@dfinity/agent'
+import { HttpAgent } from '@icp-sdk/core/agent'
 import { Option as OptionBymax } from 'bymax-react-select'
 
 export interface Language {

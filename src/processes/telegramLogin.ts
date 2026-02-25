@@ -4,7 +4,7 @@ import {
   DelegationChain,
   DelegationIdentity,
   Ed25519KeyIdentity,
-} from '@dfinity/identity'
+} from '@icp-sdk/core/identity'
 import { useDispatch } from 'react-redux'
 
 import useDPasteApi from '../hooks/useDpasteApi'

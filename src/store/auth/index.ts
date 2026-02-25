@@ -1,4 +1,4 @@
-import { HttpAgent, AnonymousIdentity } from '@dfinity/agent'
+import { HttpAgent, AnonymousIdentity } from '@icp-sdk/core/agent'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { AuthState } from '../../types'

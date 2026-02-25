@@ -13,8 +13,8 @@ import {
   useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react'
+import { useWallet as useWalletPackage } from '@research-ag/icrc-84'
 import { useFormik } from 'formik'
-import { useWallet as useWalletPackage } from 'icrc84-package'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import * as Yup from 'yup'

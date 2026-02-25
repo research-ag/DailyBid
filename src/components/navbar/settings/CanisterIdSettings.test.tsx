@@ -28,7 +28,7 @@ jest.mock('../../../utils/authUtils', () => ({
   })),
 }))
 
-jest.mock('@dfinity/agent', () => ({
+jest.mock('@icp-sdk/core/agent', () => ({
   HttpAgent: jest.fn().mockImplementation(() => ({
     createSync: jest.fn(),
     fetchRootKey: jest.fn(),
