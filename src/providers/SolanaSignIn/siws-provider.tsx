@@ -13,8 +13,10 @@ export default function SiwsProvider({
 
   // Update the SiwsIdentityProvider with the selected wallet adapter
   return (
-    <SiwsIdentityProvider canisterId={canisterId} adapter={wallet?.adapter}>
-      {children}
-    </SiwsIdentityProvider>
+    canisterId && (
+      <SiwsIdentityProvider canisterId={canisterId} adapter={wallet?.adapter}>
+        {children}
+      </SiwsIdentityProvider>
+    )
   )
 }

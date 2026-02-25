@@ -10,7 +10,7 @@ import type { Principal } from '@icp-sdk/core/principal'
 import { _SERVICE } from './ic_siwe_provider.did'
 
 export declare const idlFactory: IDL.InterfaceFactory
-export declare const canisterId: string
+export declare const canisterId: string | undefined
 
 export declare interface CreateActorOptions {
   /**
@@ -47,4 +47,4 @@ export declare const createActor: (
  * Intialized Actor using default settings, ready to talk to a canister using its candid interface
  * @constructs {@link ActorSubClass}
  */
-export declare const ic_siwe_provider: ActorSubclass<_SERVICE>
+export declare const ic_siwe_provider: ActorSubclass<_SERVICE> | undefined

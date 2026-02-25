@@ -73,8 +73,9 @@ const SolanaComponent: React.FC<SolanaComponentProps> = ({
 
   useEffect(() => {
     if (identity) {
-      siwsAuthenticate(dispatch, identity as unknown as Identity)
-      onClose()
+      siwsAuthenticate(dispatch, identity as unknown as Identity).then(() =>
+        onClose(),
+      )
     }
   }, [identity])
 

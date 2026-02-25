@@ -13,7 +13,7 @@ import {
   useColorModeValue,
   useToast,
 } from '@chakra-ui/react'
-import { DelegationIdentity } from '@icp-sdk/core/identity'
+import type { DelegationIdentity } from '@icp-sdk/core/identity'
 import { useAccountModal, useConnectModal } from '@rainbow-me/rainbowkit'
 import { useSiwe } from 'ic-siwe-js/react'
 import { useDispatch } from 'react-redux'
@@ -91,10 +91,12 @@ const EthereumComponent: React.FC<EthereumComponentProps> = ({
       // Wrap the login function in a try-catch to get more specific error information
       try {
         // This calls the correct function from authUtils that matches the original project
-        await siweAuthenticate(
-          dispatch,
-          login as unknown as () => Promise<DelegationIdentity | undefined>,
-        )
+        const siweLogin: () => Promise<
+          DelegationIdentity | undefined
+        > = async () => {
+          return login?.() as Promise<DelegationIdentity | undefined>
+        }
+        await siweAuthenticate(dispatch, siweLogin)
 
         onClose()
       } catch (loginError) {

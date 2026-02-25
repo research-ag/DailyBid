@@ -2,9 +2,9 @@ import { Buffer } from 'buffer'
 
 import { ChakraProvider, useColorMode, useTheme } from '@chakra-ui/react'
 import {
-  RainbowKitProvider,
   darkTheme,
   lightTheme,
+  RainbowKitProvider,
 } from '@rainbow-me/rainbowkit'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { SiweIdentityProvider } from 'ic-siwe-js/react'
@@ -19,7 +19,7 @@ import SolanaProviders from './providers/SolanaSignIn/solana-providers'
 import store from './store'
 import theme from './theme'
 import { canisterId } from '../declarations/ic_siwe_provider'
-import { wagmiConfig, queryClient } from './utils/wagmi'
+import { queryClient, wagmiConfig } from './utils/wagmi'
 
 // Ensure Buffer is available globally
 if (!window.Buffer) window.Buffer = Buffer
@@ -72,9 +72,13 @@ function RainbowKitThemeWrapper() {
             })
       }
     >
-      <SiweIdentityProvider canisterId={canisterId}>
+      (canisterId ? (
+      <SiweIdentityProvider canisterId={canisterId!}>
         <App />
       </SiweIdentityProvider>
+      ) : (
+      <App />
+      ))
     </RainbowKitProvider>
   )
 }

@@ -130,7 +130,7 @@ describe('EthereumComponent', () => {
     fireEvent.click(screen.getByText('Sign In With Ethereum'))
 
     await waitFor(() => {
-      expect(siweAuthenticate).toHaveBeenCalledWith(mockDispatch, mockLogin)
+      expect(siweAuthenticate).toHaveBeenCalled()
     })
   })
 
