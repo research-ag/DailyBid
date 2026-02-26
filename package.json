@@ -16,7 +16,8 @@
     "cycles": "dfx canister deposit-cycles 1000 frontend --ic",
     "test": "jest -c ./jest.config.ts",
     "lint": "eslint '**/*.ts' '**/*.tsx'",
-    "format": "prettier --config .prettierrc '**/*.{ts,tsx}' --write"
+    "format": "prettier --config .prettierrc '**/*.{ts,tsx}' --write",
+    "postinstall": "node -e \"const fs=require('fs'),p=require('path');const src=p.join('node_modules','@research-ag','ic-web-push','sw.js');const dst=p.join('public','ic-web-push-sw.js');try{fs.copyFileSync(src,dst);console.log('[postinstall] Copied',src,'to',dst)}catch(e){console.warn('[postinstall] Copy failed:',e?.message||e)}\""
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.6",
@@ -70,6 +71,7 @@
     "@rainbow-me/rainbowkit": "^2.2.4",
     "@reduxjs/toolkit": "^2.2.5",
     "@research-ag/ckbtc-address-js": "^0.0.3",
+    "@research-ag/ic-web-push": "^0.1.2",
     "@research-ag/icrc-84": "^0.0.1",
     "@solana/wallet-adapter-base": "^0.9.26",
     "@solana/wallet-adapter-react": "^0.15.38",

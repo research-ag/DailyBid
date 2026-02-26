@@ -108,6 +108,8 @@ const CanisterIdSettings: React.FC = () => {
         await serviceActor.getQuoteLedger()
 
         localStorage.setItem('auctionCanisterId', values.canisterId)
+        // Notify listeners in the same window about canisterId change
+        window.dispatchEvent(new Event('auctionCanisterIdChanged'))
 
         await fetchTokens()
         dispatch(setIsRefreshUserData())
