@@ -17,7 +17,7 @@
     "test": "jest -c ./jest.config.ts",
     "lint": "eslint '**/*.ts' '**/*.tsx'",
     "format": "prettier --config .prettierrc '**/*.{ts,tsx}' --write",
-    "postinstall": "node -e \"const fs=require('fs'),p=require('path');const src=p.join('node_modules','@research-ag','ic-web-push','sw.js');const dst=p.join('public','ic-web-push-sw.js');try{fs.copyFileSync(src,dst);console.log('[postinstall] Copied',src,'to',dst)}catch(e){console.warn('[postinstall] Copy failed:',e?.message||e)}\""
+    "postinstall": "node scripts/copy-ic-web-push-sw.mjs"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.6",

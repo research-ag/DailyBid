@@ -109,7 +109,12 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
                   }
                 >
                   <IconButton
-                    aria-label="Notifications"
+                    aria-label={
+                      notifications.isSubscribed
+                        ? 'Disable notifications'
+                        : 'Enable notifications'
+                    }
+                    aria-pressed={notifications.isSubscribed}
                     size="sm"
                     onClick={() =>
                       notifications.isSubscribed

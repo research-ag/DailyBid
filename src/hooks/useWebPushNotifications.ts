@@ -52,7 +52,10 @@ export default function useWebPushNotifications(): NotificationState {
     null,
   )
 
-  const canUse = isAuthenticated
+  const canUse = useMemo(
+    () => Boolean(isAuthenticated && userAgent && auctionCanisterId),
+    [isAuthenticated, userAgent, auctionCanisterId],
+  )
 
   useEffect(() => {
     const current = getAuctionCanisterId()
@@ -170,7 +173,7 @@ export default function useWebPushNotifications(): NotificationState {
 
     try {
       await ensureInitialized()
-      let ok = true
+      let ok = false
       if (libRef.current?.ensureSubscribed) {
         await libRef.current.ensureSubscribed({
           requestPermissionIfNeeded: true,

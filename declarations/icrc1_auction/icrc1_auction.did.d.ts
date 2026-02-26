@@ -66,7 +66,7 @@ export type BtcWithdrawResult =
       Err:
         | { MalformedAddress: string }
         | { GenericError: { error_message: string; error_code: bigint } }
-        | { TemporarilyUnavailable: any }
+        | { TemporarilyUnavailable: unknown }
         | { InsufficientAllowance: { allowance: bigint } }
         | { AlreadyProcessing: null }
         | { Duplicate: { duplicate_of: bigint } }
@@ -77,7 +77,7 @@ export type BtcWithdrawResult =
         | { CreatedInFuture: { ledger_time: bigint } }
         | { TooOld: null }
         | { Expired: { ledger_time: bigint } }
-        | { InsufficientFunds: { balance: any } }
+        | { InsufficientFunds: { balance: unknown } }
     }
 export type CancelOrderError =
   | { UnknownOrder: null }
