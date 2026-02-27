@@ -12,10 +12,11 @@ import { idlFactory as Icrc84IDLFactory } from '../../declarations/icrc1_auction
 
 let actorCache: ActorSubclass<Icrc84Actor> | null = null
 let userAgentCache: HttpAgent | null = null
+let canisterIdCache: string | null = null
 
 /**
  * Creates and returns an actor for interacting with the auction canister.
- * Ensures that the actor is only recreated if the userAgent changes.
+ * Ensures that the actor is recreated when the userAgent OR canisterId changes.
  * @param userAgent - The HTTP agent to be used for creating the actor.
  * @param canisterId - The principal ID of the ICRC aution canister.
  * @returns The created service actor.
@@ -30,6 +31,7 @@ export function getActor(
   if (!isDelegationValid) {
     const anonymousIdentity = getAgent(new AnonymousIdentity())
     userAgentCache = anonymousIdentity
+    canisterIdCache = principal
 
     actorCache = Actor.createActor<Icrc84Actor>(Icrc84IDLFactory, {
       agent: anonymousIdentity,
@@ -39,8 +41,13 @@ export function getActor(
     return actorCache
   }
 
-  if (!actorCache || userAgentCache !== userAgent) {
+  if (
+    !actorCache ||
+    userAgentCache !== userAgent ||
+    canisterIdCache !== principal
+  ) {
     userAgentCache = userAgent
+    canisterIdCache = principal
 
     actorCache = Actor.createActor<Icrc84Actor>(Icrc84IDLFactory, {
       agent: userAgent,

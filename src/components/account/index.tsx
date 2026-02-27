@@ -12,8 +12,12 @@ import {
   DrawerOverlay,
   Link,
   useColorModeValue,
+  Flex,
+  IconButton,
+  Tooltip,
 } from '@chakra-ui/react'
 import { useSiws } from 'ic-siws-js/react'
+import { FiBell, FiBellOff } from 'react-icons/fi'
 import { useDispatch, useSelector } from 'react-redux'
 
 import EthereumComponent from './auth/ethereum'
@@ -23,6 +27,7 @@ import NfidComponent from './auth/nfid'
 import SeedComponent from './auth/seed'
 import SolanaComponent from './auth/solana'
 import WalletComponent from './wallet'
+import useWebPushNotifications from '../../hooks/useWebPushNotifications'
 import useWindow from '../../hooks/useWindow'
 import { RootState } from '../../store'
 import { logout } from '../../store/auth'
@@ -37,6 +42,7 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
   isOpen,
   onClose,
 }) => {
+  const notifications = useWebPushNotifications()
   const bgColorHover = useColorModeValue('grey.300', 'grey.500')
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [showOtherLogins, setShowOtherLogins] = useState<boolean>(false)
@@ -84,15 +90,58 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton
+            top={4}
             _hover={{
               bg: bgColorHover,
             }}
           />
-          {isAuthenticated ? (
-            <DrawerHeader>Account details</DrawerHeader>
-          ) : (
-            <DrawerHeader>Log in with</DrawerHeader>
-          )}
+          <DrawerHeader pr={14}>
+            <Flex align="center" justify="space-between" gap={3}>
+              <Box>{isAuthenticated ? 'Account details' : 'Log in with'}</Box>
+              {isAuthenticated && (
+                <Tooltip
+                  shouldWrapChildren
+                  label={
+                    !notifications.canUse
+                      ? 'Notifications unavailable'
+                      : notifications.isSubscribed
+                        ? 'Disable notifications'
+                        : 'Enable notifications'
+                  }
+                >
+                  <IconButton
+                    aria-label={
+                      !notifications.canUse
+                        ? 'Notifications unavailable'
+                        : notifications.isSubscribed
+                          ? 'Disable notifications'
+                          : 'Enable notifications'
+                    }
+                    aria-pressed={notifications.isSubscribed}
+                    size="sm"
+                    onClick={() =>
+                      notifications.isSubscribed
+                        ? notifications.disable()
+                        : notifications.enable()
+                    }
+                    isDisabled={
+                      !notifications.canUse ||
+                      notifications.loading ||
+                      notifications.enabling ||
+                      notifications.disabling
+                    }
+                    isLoading={
+                      notifications.enabling || notifications.disabling
+                    }
+                    icon={
+                      notifications.isSubscribed ? <FiBell /> : <FiBellOff />
+                    }
+                    variant="ghost"
+                  />
+                </Tooltip>
+              )}
+            </Flex>
+          </DrawerHeader>
 
           <DrawerBody>
             {isAuthenticated ? (
