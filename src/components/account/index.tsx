@@ -102,7 +102,7 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
                 <Tooltip
                   label={
                     !notifications.canUse
-                      ? 'Login to manage notifications'
+                      ? 'Notifications unavailable'
                       : notifications.isSubscribed
                         ? 'Disable notifications'
                         : 'Enable notifications'

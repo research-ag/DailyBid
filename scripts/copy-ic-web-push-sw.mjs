@@ -8,5 +8,5 @@ try {
   fs.copyFileSync(src, dst)
   console.log('[postinstall] Copied', src, 'to', dst)
 } catch (e) {
-  console.warn('[postinstall] Copy failed:', e?.message || e)
+  throw new Error('[postinstall] Copy failed:', e?.message || e)
 }
