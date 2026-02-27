@@ -100,6 +100,7 @@ const AccountComponent: React.FC<AccountComponentProps> = ({
               <Box>{isAuthenticated ? 'Account details' : 'Log in with'}</Box>
               {isAuthenticated && (
                 <Tooltip
+                  shouldWrapChildren
                   label={
                     !notifications.canUse
                       ? 'Notifications unavailable'
